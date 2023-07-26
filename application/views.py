@@ -1,0 +1,202 @@
+from ast import arg
+from flask_restful import Resource,reqparse,marshal, Api,fields, marshal_with, abort
+from flask import current_app as app,jsonify,send_from_directory,session
+from datetime import datetime
+from models import User, Venue, Show, user_show
+import os
+from main import db 
+
+api = Api(app)
+
+ven = {
+    "venue_id" : fields.Integer,
+    "name" : fields.String,
+    "place" : fields.String,
+    "location" : fields.String,
+    "capacity" : fields.Integer
+}
+
+user = {
+    "firstname" : fields.String,
+    "lastname" : fields.String,
+    "username" : fields.String,
+    "email" : fields.String,
+    "password" : fields.String
+}
+
+create_user_parser = reqparse.RequestParser()
+create_user_parser.add_argument('firstname')
+create_user_parser.add_argument('lastname')
+create_user_parser.add_argument('username')
+create_user_parser.add_argument('email')
+create_user_parser.add_argument('password')
+
+login_user_parser = reqparse.RequestParser()
+login_user_parser.add_argument('email')
+login_user_parser.add_argument('password')
+
+create_show_parser = reqparse.RequestParser()
+create_show_parser.add_argument('show_name')
+create_show_parser.add_argument('price')
+create_show_parser.add_argument('available_seats')
+create_show_parser.add_argument('rating')
+create_show_parser.add_argument('tags')
+create_show_parser.add_argument('venue')
+
+create_venue_parser = reqparse.RequestParser()
+create_venue_parser.add_argument('venue_name')
+create_venue_parser.add_argument('place')
+create_venue_parser.add_argument('location')
+create_venue_parser.add_argument('capacity')
+
+class Signup(Resource):
+    def post(self):
+        
+        args = create_user_parser.parse_args()
+        firstname = args.get("firstname" ,None)
+        lastname = args.get("lastname" ,None)
+        email = args.get("email" ,None)
+        password = args.get("password" ,None)
+        username = args.get("username", None)
+
+        if firstname is None: 
+            abort(404, message="Firstname not provided")
+
+        if lastname is None: 
+            abort(404, message="Lastname not provided")
+
+        if email is None:
+            abort(404, message="Please provide a valid email id")
+            
+        if username is None:
+            abort(404, message="Please provide a valid email id")
+
+        if password is None:
+            abort(404, message="Password not provided") 
+        
+        user = User.query.filter(User.email == email).first()
+        if user:
+            abort(404, message="User with this email already exists...")  
+            
+        name = firstname + " " + lastname
+        newuser = User(name = name, username = username, email = email, password=password, role="user")
+        db.session.add(newuser)
+        db.session.commit()
+        return {
+            "USER SUCCESSFULLY CREATED"
+            }
+    
+
+class Login(Resource):
+    def post(self):
+        args = login_user_parser.parse_args()
+        print(args)
+        email = args.get("email" ,None)
+        password = args.get("password" ,None)
+
+        if email is None:
+            return {
+                "message" : "Please provide a valid email"
+            } , 404
+            
+        if password is None:
+           return {
+                "message" : "Password can not be None"
+            } ,404     
+
+        user = User.query.filter(User.email == email).first()
+        if user:
+            if(user.password == password):
+                u_id = user.user_id
+                return jsonify({
+                    "User Id" : u_id,
+                    "Name":user.name,
+                    "Username":user.username
+                })
+            else:
+                abort(404, message="Invalid Password")    
+
+        else:
+            abort(404, message="User with this email does not exist")
+
+class CreateVenue(Resource):
+    def post(self):
+        args = create_venue_parser.parse_args()
+        print(args)
+        venue_name = args.get("venue_name", None)
+        place = args.get("place", None)
+        location = args.get("location", None)
+        if venue_name is None:
+            abort(404, message="Venue name not provided") 
+
+        if place is None:
+            abort(404, message="Provide a valid Place") 
+
+        if location is None:
+            abort(404, message="Provide a valid Location")
+
+        ven = Venue.query.filter(Venue.name == venue_name).first()
+        if ven:
+            abort(404, message="Venue with this Name already exists...") 
+        
+        new_venue = Venue(name = venue_name, place = place, location = location, capacity = args.get("capacity", "undefined"))
+        db.add(new_venue)
+        db.commit()
+
+        return{
+            'NEW VENUE ADDED'
+        }
+
+class CreateShow(Resource):
+    def post(self):
+        args = create_show_parser.parse_args()
+        print(args)
+        show_name = args.get("venue_name", None)
+        price = args.get("price", None)
+        seats = args.get("available_seats", None)
+        venue = args.get("venue", None)
+        if show_name is None:
+            abort(404, message="Show name not provided") 
+
+        if price is None:
+            abort(404, message="Show price not provided") 
+        
+        if seats is None:
+            abort(404, message="Available seats for the show not provided") 
+        
+        if venue is None:
+            abort(404, message="Provide a venue for the show") 
+        
+        ven = Venue.query.filter(Venue.name == venue).first()
+        if ven:
+            new_show = Show(name = show_name, price = price, available_seats = seats, rating = args.get("rating", None), tags = args.get("tags", None), venue_id = int(ven.venue_id))
+            db.add(new_show)
+            db.commit()
+        else:
+            abort(404, message="Venue with this Name does not exists...") 
+
+        return{
+            'NEW SHOW ADDED'
+        } 
+
+class GetVenueList(Resource):
+    def get(self):
+        venue = Venue.query.all()
+        return venue
+
+class GetShow(Resource):
+    def get(self, venue_id):
+        shows = Show.query.filter(Show.venue_id == venue_id)
+        if shows:
+            return shows
+        return { 
+            "NO SHOW FOUND FOR THIS VENUE"
+        }
+
+
+api.add_resource(Signup, "/api/signup")   
+api.add_resource(Login, "/api/login") 
+api.add_resource(CreateVenue, "/api/create_venue")
+api.add_resource(CreateShow, "/api/create_show")
+api.add_resource(GetVenueList, "/api/get_venue")
+api.add_resource(GetShow, "/api/get_show/<int:venue_id>")
