@@ -5,6 +5,7 @@ from datetime import datetime
 from models import User, Venue, Show, user_show, db
 import os
 import json
+from datetime import datetime
 
 api = Api()
 
@@ -36,7 +37,7 @@ login_user_parser.add_argument("email")
 login_user_parser.add_argument("password")
 
 create_show_parser = reqparse.RequestParser()
-create_show_parser.add_argument("show_name")
+create_show_parser.add_argument("showName")
 create_show_parser.add_argument("price")
 create_show_parser.add_argument("available_seats")
 create_show_parser.add_argument("rating")
@@ -44,10 +45,15 @@ create_show_parser.add_argument("tags")
 create_show_parser.add_argument("venue")
 
 create_venue_parser = reqparse.RequestParser()
-create_venue_parser.add_argument("venue_name")
+create_venue_parser.add_argument("venueName")
 create_venue_parser.add_argument("place")
 create_venue_parser.add_argument("location")
 create_venue_parser.add_argument("capacity")
+
+create_booking_parser = reqparse.RequestParser()
+create_booking_parser.add_argument("userId")
+create_booking_parser.add_argument("showId")
+create_booking_parser.add_argument("rating")
 
 
 def initialize_views(app):
@@ -121,6 +127,68 @@ class Login(Resource):
 
         else:
             abort(404, message="User with this email does not exist")
+
+class Logout(Resource):
+    def get(self,userId = None):
+        if userId:
+            user= User.query.filter(User.user_id == userId).first()
+            if user:
+                return user
+            else:
+                abort(404,message="Invalid user id")
+        else:
+            abort(404,message="Enter user id")
+
+class Profile(Resource):
+    def get(self, userId=None):
+        results = []
+        if userId:
+            user = User.query.filter(User.user_id == userId).first()
+            if user:
+                user_shows = user_show.query.filter(user_show.user_id == userId).all()
+                if user_shows:
+                    for shows in user_shows:
+                        temp_show = Show.query.filter(Show.show_id == shows.show_id).first()
+                        venue = Venue.query.filter(Venue.venue_id == temp_show.venue_id).first()
+                        d = {"Show" : temp_show.name, "Venue" : venue.name, "Rate" : shows.rated}
+                        results.append(d)
+                    return results
+                else:
+                    return {
+                        "msg" : "No booking history. Book a show now",
+                        "user" : user
+                    }
+            else:
+                abort(404, "User with this id does not exist")
+                
+        else:
+            abort(404, "Provide user id")
+
+class Booking(Resource):
+    def post(self, userId = None):
+        args = create_booking_parser.parse_args()
+        print(type(args))
+        user_id = args.get("userId",None)
+        show_id = args.get("showId",None)
+        rating = args.get("rating",None)
+        if user_id is None:
+            abort(404, message="User id not provided")
+        if show_id is None:
+            abort(404, message="Show id not provided")
+
+        user = user_show.query.filter(user_show.user_id == user_id, user_show.show_id == show_id).first()
+        if user:
+            abort(404, "This show is already booked by you")
+        new_booking = user_show(
+            user_id = user_id,
+            show_id = show_id,
+            booking_time = datetime().now(),
+            rated = rating,
+        )
+        db.session.add(new_booking)
+        db.session.commit()
+
+        return "Booking Successfull", 200
 
 
 class Venue(Resource):
@@ -302,16 +370,11 @@ class GetVenueList(Resource):
         return {'data' : filtered_json}
 
 
-class GetShow(Resource):
-    def get(self, venue_id):
-        shows = Show.query.filter(Show.venue_id == venue_id)
-        if shows:
-            return shows
-        return {"NO SHOW FOUND FOR THIS VENUE"}
-
 
 api.add_resource(Signup, "/api/signup")
 api.add_resource(Login, "/api/login")
+api.add_resource(Logout,"/api/logout/<int:uid>")
 api.add_resource(Venue, "/api/venue/<int:venueId>")
 api.add_resource(Show, "/api/show/<int:showId>/<int:venueId>")
-api.add_resource(GetVenueList, "/api/get_venue")
+api.add_resource(GetVenueList, "/api/getVenue")
+api.add_resource(Profile,"/api/userProfile/<int:userId>")

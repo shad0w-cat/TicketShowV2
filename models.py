@@ -33,6 +33,5 @@ class user_show(db.Model):
     id = db.Column(db.Integer, primary_key=True,autoincrement=True, nullable=False)
     user_id = db.Column(db.Integer, db.ForeignKey('user.user_id', ondelete="CASCADE"), nullable=False)
     show_id = db.Column(db.Integer, db.ForeignKey('show.show_id', ondelete="CASCADE"), nullable=False)
-    venue_id = db.Column(db.Integer, db.ForeignKey('venue.venue_id', ondelete="CASCADE"), nullable=False)
     booking_time = db.Column(db.String, nullable = False)
     rated = db.Column(db.String)
