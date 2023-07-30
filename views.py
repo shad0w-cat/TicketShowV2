@@ -1,11 +1,11 @@
 from ast import arg
 from flask_restful import Resource, reqparse, marshal, Api, fields, marshal_with, abort
-from flask import current_app as app, jsonify, send_from_directory, session
+from flask import current_app, jsonify, send_from_directory, session
 from datetime import datetime
 from models import User, Venue, Show, user_show, db
 import os
 
-api = Api(app)
+api = Api()
 
 ven = {
     "venue_id": fields.Integer,
@@ -47,6 +47,10 @@ create_venue_parser.add_argument("venue_name")
 create_venue_parser.add_argument("place")
 create_venue_parser.add_argument("location")
 create_venue_parser.add_argument("capacity")
+
+
+def initialize_views(app):
+    api.init_app(app)
 
 
 class Signup(Resource):
@@ -121,7 +125,7 @@ class Login(Resource):
 class CreateVenue(Resource):
     def post(self):
         args = create_venue_parser.parse_args()
-        print(args)
+        print(type(args))
         venue_name = args.get("venue_name", None)
         place = args.get("place", None)
         location = args.get("location", None)
@@ -144,10 +148,10 @@ class CreateVenue(Resource):
             location=location,
             capacity=args.get("capacity", "undefined"),
         )
-        db.add(new_venue)
-        db.commit()
+        db.session.add(new_venue)
+        db.session.commit()
 
-        return {"NEW VENUE ADDED"}
+        return {"msg": "NEW VENUE ADDED"}
 
 
 class CreateShow(Resource):
@@ -180,8 +184,8 @@ class CreateShow(Resource):
                 tags=args.get("tags", None),
                 venue_id=int(ven.venue_id),
             )
-            db.add(new_show)
-            db.commit()
+            db.session.add(new_show)
+            db.session.commit()
         else:
             abort(404, message="Venue with this Name does not exists...")
 

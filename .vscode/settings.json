@@ -2,5 +2,9 @@
     "python.pythonPath": "/Users/simran/Documents/mad2 project/TicketShowV2/env/bin/python",
     "python.analysis.extraPaths": [
         "./application"
-    ]
+    ],
+    "[python]": {
+        "editor.defaultFormatter": "ms-python.black-formatter"
+    },
+    "python.formatting.provider": "none"
 }
