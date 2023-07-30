@@ -4,6 +4,7 @@ from flask import current_app, jsonify, send_from_directory, session
 from datetime import datetime
 from models import User, Venue, Show, user_show, db
 import os
+import json
 
 api = Api()
 
@@ -195,7 +196,12 @@ class CreateShow(Resource):
 class GetVenueList(Resource):
     def get(self):
         venue = Venue.query.all()
-        return venue
+
+        filtered_json = []
+        for ven in venue:
+            record_json = json.dumps(ven)
+            filtered_json.insert(0, record_json)
+        return {'data' : filtered_json}
 
 
 class GetShow(Resource):
