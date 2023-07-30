@@ -123,8 +123,20 @@ class Login(Resource):
             abort(404, message="User with this email does not exist")
 
 
-class CreateVenue(Resource):
-    def post(self):
+class Venue(Resource):
+
+    def get(self,venueId=None):
+        if venueId:
+            ven = Venue.query.filter(Venue.venue_id == venueId).first()
+            if ven:
+                return ven
+            else:
+                return "Venue does not exist",200
+        
+        else:
+            abort(404,message="Enter venue id")
+
+    def post(self,venueId=None):
         args = create_venue_parser.parse_args()
         print(type(args))
         venue_name = args.get("venue_name", None)
@@ -152,11 +164,64 @@ class CreateVenue(Resource):
         db.session.add(new_venue)
         db.session.commit()
 
-        return {"msg": "NEW VENUE ADDED"}
+        return "New venue added", 200
+
+    def put(self,venueId=None):
+        args = create_venue_parser.parse_args()
+        print(type(args))
+        venue_name = args.get("venue_name", None)
+        place = args.get("place", None)
+        location = args.get("location", None)
+        capacity = args.get("capacity", None)
+
+        ven = Venue.query.filter(Venue.venue_id == venueId).first()
+        if ven:
+            if venue_name:
+                ven.name = venue_name
+            if place:
+                ven.place = place
+            if location:
+                ven.location = location
+            if capacity:
+                ven.capacity = capacity
+            db.session.commit()
+            return ven
+        else:
+            abort(404,"invalid card")
+
+    def delete(self,venueId=None):
+        if venueId:
+            ven = Venue.query.filter(Venue.venue_id == venueId).first()
+            if ven:
+                db.session.delete(ven)
+                db.session.commit()
+                return 'Venue deleted successfully',200
+            else:
+                abort(404,message="Venue does not exists")
+        else:
+            abort(404,message="Enter venue id")
 
 
-class CreateShow(Resource):
-    def post(self):
+class Show(Resource):
+
+    def get(self,showId=None,venueId=None):
+        if showId:
+            show = Show.query.filter(Show.show_id == showId).first()
+            if show:
+                return show
+            else:
+                return "Show does not exist with this id", 200
+        elif venueId:
+            show = Show.query.filter(Show.venue_id == venueId).first()
+            if show:
+                return show
+            else:
+                return "Show does not exist with this venue id", 200
+        else:
+            abort(404,message="Enter show id or venue id")
+
+
+    def post(self,showId=None,venueId=None):
         args = create_show_parser.parse_args()
         print(args)
         show_name = args.get("venue_name", None)
@@ -190,7 +255,40 @@ class CreateShow(Resource):
         else:
             abort(404, message="Venue with this Name does not exists...")
 
-        return {"NEW SHOW ADDED"}
+        return "New Show added", 200
+
+    def put(self,showId=None,venueId=None):
+        args = create_show_parser.parse_args()
+        print(args)
+        show_name = args.get("venue_name", None)
+        price = args.get("price", None)
+        seats = args.get("available_seats", None)
+
+        show = Show.query.filter(Show.show_id == showId).first()
+        if show:
+            if show_name:
+                show.name = show_name
+            if price:
+                show.price = price
+            if seats:
+                show.available_seats = seats
+
+            db.session.commit()
+            return ven
+        else:
+            abort(404,"invalid card")
+
+    def delete(self,showId=None,venueId=None):
+        if showId:
+            show = Show.query.filter(Show.show_id == showId).first()
+            if show:
+                db.session.delete(show)
+                db.session.commit()
+                return 'Show deleted successfully',200
+            else:
+                abort(404,message="Show does not exists")
+        else:
+            abort(404,message="Show venue id")
 
 
 class GetVenueList(Resource):
@@ -214,7 +312,6 @@ class GetShow(Resource):
 
 api.add_resource(Signup, "/api/signup")
 api.add_resource(Login, "/api/login")
-api.add_resource(CreateVenue, "/api/create_venue")
-api.add_resource(CreateShow, "/api/create_show")
+api.add_resource(Venue, "/api/venue/<int:venueId>")
+api.add_resource(Show, "/api/show/<int:showId>/<int:venueId>")
 api.add_resource(GetVenueList, "/api/get_venue")
-api.add_resource(GetShow, "/api/get_show/<int:venue_id>")
