@@ -1,16 +1,15 @@
 <template>
-    <EditVenueModal :showVenueModal="showEditVenue" @editVenue="editVenue" @closeModal="hideEditVenueModal" :title="'Edit'"
-        :editVenue="venue" />
-    <AddShowModal :showShowModal="showAddShow" @addShow="addShow" @closeModal="hideAddShowModal" :title="'Add New'" />
-    <div class="containerV">
-        <div class="venue-card-admin">
-            <h2>{{ venue.name }}</h2>
-            <h6>{{ venue.place }}, {{ venue.location }}</h6>
+    <EditShowModal :showVenueModal="showEditShow" @editShow="editShow" @closeModal="hideEditVenueModal" :title="'Edit'"
+        :editShow="show" />
+    <div class="containerS">
+        <div class="show-card-admin">
+            <h2>{{ show.name }}</h2>
+            <!-- <h6>{{ show.place }}, {{ show.location }}</h6> -->
 
             <div class="shows-container-admin">
-                <ShowCard v-for="show in venue.shows" :key="show.id" :show="show" />
+                <ShowCard v-for="show in shows" :key="show.id" :show="show" />
             </div>
-            <button @click="showAddShowModal" class="addButtonV">+</button>
+            <button @click="showAddShowModal" class="addButtonS">+</button>
             <br />
             <br />
             <div class="venue-card-admin-footer">
@@ -23,23 +22,22 @@
 
 <script>
 import ShowCard from './ShowCard.vue';
-import AddShowModal from './ShowModal.vue';
-import EditVenueModal from './VenueModal.vue';
+import AddShowModal from './AddShowModal.vue';
+import EditShowModal from './ShowModal.vue';
 
 
 export default {
     data: () => {
         return {
             showEditVenue: false,
-            showAddShow: false,
         }
     },
-    props: ['venue'],
+    props: ['show'],
     components: {
         ShowCard,
         // eslint-disable-next-line vue/no-unused-components
         AddShowModal,
-        EditVenueModal,
+        EditShowModal,
     },
     methods: {
         showEditVenueModal() {
@@ -48,28 +46,9 @@ export default {
         hideEditVenueModal() {
             this.showEditVenue = false;
         },
-        showAddShowModal() {
-            this.showAddShow = true;
-        },
-        hideAddShowModal() {
-            this.showAddShow = false;
-        },
-        async addShow(newShow) {
-            newShow.venue = this.venue.name;
-            const rawResponse = await fetch(`http://127.0.0.1:8081/api/show/1/1`, {
-                method: 'POST',
-                headers: {
-                    'Accept': 'application/json',
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(newShow),
-            });
-            console.log(rawResponse)
-            this.$emit('onUpdate');
-        },
         async editVenue(editVenue) {
             console.log(JSON.stringify(editVenue))
-            const rawResponse = await fetch(`http://127.0.0.1:8081/api/show/${this.venue.venue_id}`, {
+            const rawResponse = await fetch(`http://127.0.0.1:8081/api/venue/${this.venue.venue_id}`, {
                 method: 'PUT',
                 headers: {
                     'Accept': 'application/json',
@@ -84,10 +63,14 @@ export default {
             const rawResponse = fetch(`http://127.0.0.1:8081/api/venue/${this.venue.venue_id}`, { method: 'DELETE' })
             console.log('Delete venue:', rawResponse);
         },
+        showAddShowModal() {
+            // Show the modal to add shows to the venue
+            this.$refs.addShowModal.showModal();
+        },
     },
     async mounted() {
         try {
-            const venuesResponse = await fetch('http://127.0.0.1:8081/api/show/None/1');
+            const venuesResponse = await fetch('http://127.0.0.1:8081/api/getVenue');
             const venuesData = await venuesResponse.json();
             this.venues = Object.values(venuesData).pop();
 
@@ -124,7 +107,7 @@ export default {
     margin: 5px;
 }
 
-.addButtonV {
+.addButtonS {
     display: flex;
     justify-content: center;
     align-items: center;
@@ -135,7 +118,7 @@ export default {
     font-size: x-large;
 }
 
-.venue-card-admin-footer>button {
+.show-card-admin-footer>button {
     border-radius: 10px;
 }
 </style>
