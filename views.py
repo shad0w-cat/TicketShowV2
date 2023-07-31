@@ -6,6 +6,7 @@ from models import User, Venue, Show, user_show, db
 import os
 import json
 from datetime import datetime
+from jwt_auth import auth_required
 
 api = Api()
 
@@ -358,6 +359,16 @@ class Show(Resource):
         else:
             abort(404,message="Show venue id")
 
+class GetShowList(Resource):
+    def get(self, venueId):
+        show = Show.query.filter(Show.venue_id == venueId)
+
+        filtered_json = []
+        for s in show:
+            record_json = json.dumps(s)
+            filtered_json.insert(0, record_json)
+        return {'data' : filtered_json}
+api.add_resource(GetShowList,"/api/getVenueShow/<int:venueId>")
 
 class GetVenueList(Resource):
     def get(self):
@@ -368,7 +379,6 @@ class GetVenueList(Resource):
             record_json = json.dumps(ven)
             filtered_json.insert(0, record_json)
         return {'data' : filtered_json}
-
 
 
 api.add_resource(Signup, "/api/signup")
