@@ -128,16 +128,18 @@ class Login(Resource):
         else:
             abort(404, message="User with this email does not exist")
 
+
 class Logout(Resource):
-    def get(self,userId = None):
+    def get(self, userId=None):
         if userId:
-            user= User.query.filter(User.user_id == userId).first()
+            user = User.query.filter(User.user_id == userId).first()
             if user:
                 return user
             else:
-                abort(404,message="Invalid user id")
+                abort(404, message="Invalid user id")
         else:
-            abort(404,message="Enter user id")
+            abort(404, message="Enter user id")
+
 
 class Profile(Resource):
     def get(self, userId=None):
@@ -148,42 +150,50 @@ class Profile(Resource):
                 user_shows = user_show.query.filter(user_show.user_id == userId).all()
                 if user_shows:
                     for shows in user_shows:
-                        temp_show = Show.query.filter(Show.show_id == shows.show_id).first()
-                        venue = Venue.query.filter(Venue.venue_id == temp_show.venue_id).first()
-                        d = {"Show" : temp_show.name, "Venue" : venue.name, "Rate" : shows.rated}
+                        temp_show = Show.query.filter(
+                            Show.show_id == shows.show_id
+                        ).first()
+                        venue = Venue.query.filter(
+                            Venue.venue_id == temp_show.venue_id
+                        ).first()
+                        d = {
+                            "Show": temp_show.name,
+                            "Venue": venue.name,
+                            "Rate": shows.rated,
+                        }
                         results.append(d)
                     return results
                 else:
-                    return {
-                        "msg" : "No booking history. Book a show now",
-                        "user" : user
-                    }
+                    return {"msg": "No booking history. Book a show now", "user": user}
             else:
                 abort(404, "User with this id does not exist")
-                
+
         else:
             abort(404, "Provide user id")
 
+
 class Booking(Resource):
-    def post(self, userId = None):
+    def post(self, userId=None):
         args = create_booking_parser.parse_args()
         print(type(args))
-        user_id = args.get("userId",None)
-        show_id = args.get("showId",None)
-        rating = args.get("rating",None)
+        user_id = args.get("userId", None)
+        show_id = args.get("showId", None)
+        rating = args.get("rating", None)
         if user_id is None:
             abort(404, message="User id not provided")
         if show_id is None:
             abort(404, message="Show id not provided")
 
-        user = user_show.query.filter(user_show.user_id == user_id, user_show.show_id == show_id).first()
+        user = user_show.query.filter(
+            user_show.user_id == user_id, user_show.show_id == show_id
+        ).first()
         if user:
             abort(404, "This show is already booked by you")
         new_booking = user_show(
-            user_id = user_id,
-            show_id = show_id,
-            booking_time = datetime().now(),
-            rated = rating,
+            user_id=user_id,
+            show_id=show_id,
+            booking_time=datetime().now(),
+            rated=rating,
         )
         db.session.add(new_booking)
         db.session.commit()
@@ -191,20 +201,19 @@ class Booking(Resource):
         return "Booking Successfull", 200
 
 
-class Venue(Resource):
-
-    def get(self,venueId=None):
+class Venue2(Resource):
+    def get(self, venueId=None):
         if venueId:
             ven = Venue.query.filter(Venue.venue_id == venueId).first()
             if ven:
                 return ven
             else:
-                return "Venue does not exist",200
-        
-        else:
-            abort(404,message="Enter venue id")
+                return "Venue does not exist", 200
 
-    def post(self,venueId=None):
+        else:
+            abort(404, message="Enter venue id")
+
+    def post(self, venueId=None):
         args = create_venue_parser.parse_args()
         print(type(args))
         venue_name = args.get("venue_name", None)
@@ -234,7 +243,7 @@ class Venue(Resource):
 
         return "New venue added", 200
 
-    def put(self,venueId=None):
+    def put(self, venueId=None):
         args = create_venue_parser.parse_args()
         print(type(args))
         venue_name = args.get("venue_name", None)
@@ -255,24 +264,23 @@ class Venue(Resource):
             db.session.commit()
             return ven
         else:
-            abort(404,"invalid card")
+            abort(404, "invalid card")
 
-    def delete(self,venueId=None):
+    def delete(self, venueId=None):
         if venueId:
             ven = Venue.query.filter(Venue.venue_id == venueId).first()
             if ven:
                 db.session.delete(ven)
                 db.session.commit()
-                return 'Venue deleted successfully',200
+                return "Venue deleted successfully", 200
             else:
-                abort(404,message="Venue does not exists")
+                abort(404, message="Venue does not exists")
         else:
-            abort(404,message="Enter venue id")
+            abort(404, message="Enter venue id")
 
 
 class Show(Resource):
-
-    def get(self,showId=None,venueId=None):
+    def get(self, showId=None, venueId=None):
         if showId:
             show = Show.query.filter(Show.show_id == showId).first()
             if show:
@@ -286,10 +294,9 @@ class Show(Resource):
             else:
                 return "Show does not exist with this venue id", 200
         else:
-            abort(404,message="Enter show id or venue id")
+            abort(404, message="Enter show id or venue id")
 
-
-    def post(self,showId=None,venueId=None):
+    def post(self, showId=None, venueId=None):
         args = create_show_parser.parse_args()
         print(args)
         show_name = args.get("venue_name", None)
@@ -325,7 +332,7 @@ class Show(Resource):
 
         return "New Show added", 200
 
-    def put(self,showId=None,venueId=None):
+    def put(self, showId=None, venueId=None):
         args = create_show_parser.parse_args()
         print(args)
         show_name = args.get("venue_name", None)
@@ -344,37 +351,32 @@ class Show(Resource):
             db.session.commit()
             return ven
         else:
-            abort(404,"invalid card")
+            abort(404, "invalid card")
 
-    def delete(self,showId=None,venueId=None):
+    def delete(self, showId=None, venueId=None):
         if showId:
             show = Show.query.filter(Show.show_id == showId).first()
             if show:
                 db.session.delete(show)
                 db.session.commit()
-                return 'Show deleted successfully',200
+                return "Show deleted successfully", 200
             else:
-                abort(404,message="Show does not exists")
+                abort(404, message="Show does not exists")
         else:
-            abort(404,message="Show venue id")
+            abort(404, message="Show venue id")
 
 
 class GetVenueList(Resource):
     def get(self):
         venue = Venue.query.all()
-
-        filtered_json = []
-        for ven in venue:
-            record_json = json.dumps(ven)
-            filtered_json.insert(0, record_json)
-        return {'data' : filtered_json}
-
+        filtered_json = [ven.to_dict() for ven in venue]
+        return {"data": filtered_json}
 
 
 api.add_resource(Signup, "/api/signup")
 api.add_resource(Login, "/api/login")
-api.add_resource(Logout,"/api/logout/<int:uid>")
-api.add_resource(Venue, "/api/venue/<int:venueId>")
+api.add_resource(Logout, "/api/logout/<int:uid>")
+api.add_resource(Venue2, "/api/venue/<int:venueId>")
 api.add_resource(Show, "/api/show/<int:showId>/<int:venueId>")
 api.add_resource(GetVenueList, "/api/getVenue")
-api.add_resource(Profile,"/api/userProfile/<int:userId>")
+api.add_resource(Profile, "/api/userProfile/<int:userId>")

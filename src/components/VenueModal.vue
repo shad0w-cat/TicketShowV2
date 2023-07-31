@@ -1,7 +1,7 @@
 <template>
     <div v-if="showVenueModal" class="add-venue-modal">
         <div class="venue-modal-content">
-            <h3>Add New Venue</h3>
+            <h3>{{ title }} Venue</h3>
             <form @submit.prevent="addVenue">
                 <div class="form-group">
                     <label for="venue_name">Venue Name:</label>
@@ -14,7 +14,7 @@
                     <input type="number" id="capacity" v-model="newVenue.capacity" min="1" required>
                 </div>
                 <div class="form-btns">
-                    <button type="submit">Add Venue</button>
+                    <button type="submit">{{ title }} Venue</button>
                     &nbsp;
                     <button @click.prevent="hideModal">Cancel</button>
                 </div>
@@ -26,19 +26,31 @@
 <script>
 export default {
     data() {
-        return {
-            // showModal: this.$props.showVenueModal,
-            newVenue: {
-                venue_name: '',
-                place: '',
-                location: '',
-                capacity: 0,
-            },
-        };
+        if (this.editVenue) {
+            return {
+                newVenue: {
+                    venue_name: this.editVenue.name,
+                    place: this.editVenue.place,
+                    location: this.editVenue.location,
+                    capacity: this.editVenue.capacity,
+                },
+            };
+        }
+        else {
+            return {
+                newVenue: {
+                    venue_name: '',
+                    place: '',
+                    location: '',
+                    capacity: 0,
+                },
+            };
+        }
     },
     methods: {
         addVenue() {
             this.$emit('addVenue', this.newVenue);
+            this.$emit('editVenue', this.newVenue);
             this.hideModal();
             this.resetForm();
         },
@@ -47,19 +59,37 @@ export default {
             this.$emit('closeModal');
         },
         resetForm() {
-            this.newVenue = {
-                venue_name: '',
-                place: '',
-                location: '',
-                capacity: 0,
+            if (this.editVenue) {
+                this.newVenue = {
+                    venue_name: this.editVenue.name,
+                    place: this.editVenue.place,
+                    location: this.editVenue.location,
+                    capacity: this.editVenue.capacity,
+                };
+            }
+            else {
+                this.newVenue = {
+                    venue_name: '',
+                    place: '',
+                    location: '',
+                    capacity: 0,
+                };
             }
         },
     },
     props: {
+        title: {
+            type: String,
+            required: true,
+        },
         showVenueModal: {
             type: Boolean,
             required: true,
         },
+        editVenue: {
+            type: Object,
+            required: false,
+        }
     },
 };
 </script>

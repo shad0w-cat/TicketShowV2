@@ -4,7 +4,8 @@
             <VenueCardAdmin v-for="venue in venues" :key="venue.id" :venue="venue" />
         </div>
         <button class="addButton" @click="showAddVenueModal">+</button>
-        <AddVenueModal :showVenueModal="showAddVenue" @addVenue="addVenue" @closeModal="hideAddVenueModal" />
+        <AddVenueModal :showVenueModal="showAddVenue" @addVenue="addVenue" @closeModal="hideAddVenueModal"
+            :title="'Add New'" />
 
         <!-- Additional modal and logic for adding venues if needed -->
     </div>
@@ -12,7 +13,7 @@
 
 <script>
 import VenueCardAdmin from './VenueCardAdmin.vue';
-import AddVenueModal from './AddVenueModal.vue';
+import AddVenueModal from './VenueModal.vue';
 
 export default {
     data() {
@@ -39,18 +40,21 @@ export default {
             });
             // const content = await rawResponse.json();
             console.log(rawResponse)
+
         },
 
         // Fetch data for venues and shows from the API and update the "venues" array
-        async mounted() {
-            try {
-                const venuesResponse = await fetch('http://127.0.0.1:8081/api/get-venue');
-                const venuesData = await venuesResponse.json();
-                this.venues = venuesData;
-            } catch (error) {
-                console.error('Error fetching venues:', error);
-            }
-        },
+
+    },
+    async mounted() {
+        try {
+            const venuesResponse = await fetch('http://127.0.0.1:8081/api/getVenue');
+            const venuesData = await venuesResponse.json();
+            this.venues = Object.values(venuesData).pop();
+
+        } catch (error) {
+            console.error('Error fetching venues:', error);
+        }
     },
     components: {
         VenueCardAdmin,
@@ -65,9 +69,9 @@ export default {
 }
 
 .addButton {
-    position: relative;
+    position: absolute;
     left: 95%;
-    top: 10px;
+    top: 6.5%;
     display: flex;
     justify-content: center;
     align-items: center;
@@ -76,5 +80,10 @@ export default {
     border-radius: 120px;
     background-color: aqua;
     font-size: x-large;
+}
+
+.venue-cards-container-admin {
+    margin-top: 20px;
+    display: flex;
 }
 </style>
