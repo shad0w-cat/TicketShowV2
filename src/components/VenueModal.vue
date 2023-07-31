@@ -5,7 +5,7 @@
             <form @submit.prevent="addVenue">
                 <div class="form-group">
                     <label for="venue_name">Venue Name:</label>
-                    <input type="text" id="venue_name" v-model="newVenue.venue_name" required>
+                    <input type="text" id="venue_name" v-model="newVenue.venueName" required>
                     <label for="place">Place:</label>
                     <input type="text" id="place" v-model="newVenue.place" required>
                     <label for="location">Location:</label>
@@ -29,7 +29,7 @@ export default {
         if (this.editVenue) {
             return {
                 newVenue: {
-                    venue_name: this.editVenue.name,
+                    venueName: this.editVenue.name,
                     place: this.editVenue.place,
                     location: this.editVenue.location,
                     capacity: this.editVenue.capacity,
@@ -39,7 +39,7 @@ export default {
         else {
             return {
                 newVenue: {
-                    venue_name: '',
+                    venueName: '',
                     place: '',
                     location: '',
                     capacity: 0,
@@ -49,8 +49,12 @@ export default {
     },
     methods: {
         addVenue() {
-            this.$emit('addVenue', this.newVenue);
-            this.$emit('editVenue', this.newVenue);
+            if (this.title === "Edit") {
+                console.log(this.newVenue)
+                this.$emit('editVenue', this.newVenue);
+            }
+            else
+                this.$emit('addVenue', this.newVenue);
             this.hideModal();
             this.resetForm();
         },
@@ -61,7 +65,7 @@ export default {
         resetForm() {
             if (this.editVenue) {
                 this.newVenue = {
-                    venue_name: this.editVenue.name,
+                    venueName: this.editVenue.name,
                     place: this.editVenue.place,
                     location: this.editVenue.location,
                     capacity: this.editVenue.capacity,
@@ -69,7 +73,7 @@ export default {
             }
             else {
                 this.newVenue = {
-                    venue_name: '',
+                    venueName: '',
                     place: '',
                     location: '',
                     capacity: 0,

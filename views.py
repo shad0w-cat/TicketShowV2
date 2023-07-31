@@ -201,7 +201,7 @@ class Booking(Resource):
         return "Booking Successfull", 200
 
 
-class Venue2(Resource):
+class VenueApi(Resource):
     def get(self, venueId=None):
         if venueId:
             ven = Venue.query.filter(Venue.venue_id == venueId).first()
@@ -215,8 +215,8 @@ class Venue2(Resource):
 
     def post(self, venueId=None):
         args = create_venue_parser.parse_args()
-        print(type(args))
-        venue_name = args.get("venue_name", None)
+        print(args)
+        venue_name = args.get("venueName", None)
         place = args.get("place", None)
         location = args.get("location", None)
         if venue_name is None:
@@ -245,8 +245,8 @@ class Venue2(Resource):
 
     def put(self, venueId=None):
         args = create_venue_parser.parse_args()
-        print(type(args))
-        venue_name = args.get("venue_name", None)
+
+        venue_name = args.get("venueName", None)
         place = args.get("place", None)
         location = args.get("location", None)
         capacity = args.get("capacity", None)
@@ -262,7 +262,7 @@ class Venue2(Resource):
             if capacity:
                 ven.capacity = capacity
             db.session.commit()
-            return ven
+            return ven.to_dict()
         else:
             abort(404, "invalid card")
 
@@ -279,7 +279,7 @@ class Venue2(Resource):
             abort(404, message="Enter venue id")
 
 
-class Show(Resource):
+class ShowApi(Resource):
     def get(self, showId=None, venueId=None):
         if showId:
             show = Show.query.filter(Show.show_id == showId).first()
@@ -299,7 +299,7 @@ class Show(Resource):
     def post(self, showId=None, venueId=None):
         args = create_show_parser.parse_args()
         print(args)
-        show_name = args.get("venue_name", None)
+        show_name = args.get("showName", None)
         price = args.get("price", None)
         seats = args.get("available_seats", None)
         venue = args.get("venue", None)
@@ -373,10 +373,22 @@ class GetVenueList(Resource):
         return {"data": filtered_json}
 
 
+class GetShowList(Resource):
+    def get(self, venueId):
+        show = Show.query.filter(Show.venue_id == venueId)
+
+        filtered_json = []
+        for s in show:
+            record_json = json.dumps(s)
+            filtered_json.insert(0, record_json)
+        return {"data": filtered_json}
+
+
+api.add_resource(GetShowList, "/api/getVenueShow/<int:venueId>")
 api.add_resource(Signup, "/api/signup")
 api.add_resource(Login, "/api/login")
 api.add_resource(Logout, "/api/logout/<int:uid>")
-api.add_resource(Venue2, "/api/venue/<int:venueId>")
-api.add_resource(Show, "/api/show/<int:showId>/<int:venueId>")
+api.add_resource(VenueApi, "/api/venue/<int:venueId>")
+api.add_resource(ShowApi, "/api/show/<int:showId>/<int:venueId>")
 api.add_resource(GetVenueList, "/api/getVenue")
 api.add_resource(Profile, "/api/userProfile/<int:userId>")

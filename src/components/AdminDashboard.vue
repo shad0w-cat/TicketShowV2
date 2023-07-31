@@ -1,13 +1,11 @@
 <template>
     <div class="admin-dashboard">
         <div class="venue-cards-container-admin">
-            <VenueCardAdmin v-for="venue in venues" :key="venue.id" :venue="venue" />
+            <VenueCardAdmin v-for="venue in venues" :key="venue.id" :venue="venue" @onUpdate="fetchVenues" />
         </div>
-        <button class="addButton" @click="showAddVenueModal">+</button>
+        <button class="addButtonVM" @click="showAddVenueModal">+</button>
         <AddVenueModal :showVenueModal="showAddVenue" @addVenue="addVenue" @closeModal="hideAddVenueModal"
             :title="'Add New'" />
-
-        <!-- Additional modal and logic for adding venues if needed -->
     </div>
 </template>
 
@@ -18,8 +16,8 @@ import AddVenueModal from './VenueModal.vue';
 export default {
     data() {
         return {
-            venues: [], // Array to store the venues
-            showAddVenue: false, // Boolean value used as a flag to display add venue modal
+            venues: [],
+            showAddVenue: false,
         };
     },
     methods: {
@@ -30,7 +28,7 @@ export default {
             this.showAddVenue = false;
         },
         async addVenue(newVenue) {
-            const rawResponse = await fetch('http://127.0.0.1:8081/api/create_venue', {
+            const rawResponse = await fetch('http://127.0.0.1:8081/api/venue/1', {
                 method: 'POST',
                 headers: {
                     'Accept': 'application/json',
@@ -40,21 +38,22 @@ export default {
             });
             // const content = await rawResponse.json();
             console.log(rawResponse)
-
+            this.fetchVenues()
         },
+        async fetchVenues() {
+            try {
+                const venuesResponse = await fetch('http://127.0.0.1:8081/api/getVenue');
+                const venuesData = await venuesResponse.json();
+                this.venues = Object.values(venuesData).pop();
 
-        // Fetch data for venues and shows from the API and update the "venues" array
+            } catch (error) {
+                console.error('Error fetching venues:', error);
+            }
+        }
 
     },
-    async mounted() {
-        try {
-            const venuesResponse = await fetch('http://127.0.0.1:8081/api/getVenue');
-            const venuesData = await venuesResponse.json();
-            this.venues = Object.values(venuesData).pop();
-
-        } catch (error) {
-            console.error('Error fetching venues:', error);
-        }
+    mounted() {
+        this.fetchVenues()
     },
     components: {
         VenueCardAdmin,
@@ -68,9 +67,9 @@ export default {
     height: 100%;
 }
 
-.addButton {
+.addButtonVM {
     position: absolute;
-    left: 95%;
+    right: .5%;
     top: 6.5%;
     display: flex;
     justify-content: center;
