@@ -12,8 +12,7 @@ CORS(app)
 app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///TicketShow_database.sqlite3"
 app.config["DEBUG"] = False
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = True
-app.secret_key = "secretkey"
-db.init_app(app)
+app.secret_key = "shushhh"
 with app.app_context():
     db.create_all()
 initialize_views(app)

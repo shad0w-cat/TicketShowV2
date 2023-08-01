@@ -1,14 +1,17 @@
 from ast import arg
+from re import A
 from flask_restful import Resource, reqparse, marshal, Api, fields, marshal_with, abort
 from flask import current_app, jsonify, send_from_directory, session
-from datetime import datetime
+from datetime import datetime, timedelta
 from models import User, Venue, Show, user_show, db
 import os
 import json
 from datetime import datetime
 from jwt_auth import auth_required
+import jwt
 
 api = Api()
+app = ""
 
 ven = {
     "venue_id": fields.Integer,
@@ -58,11 +61,13 @@ create_booking_parser.add_argument("rating")
 
 
 def initialize_views(app):
+    app = app
     api.init_app(app)
 
 
 class Signup(Resource):
     def post(self):
+        valid_user = {}
         args = create_user_parser.parse_args()
         firstname = args.get("firstname", None)
         lastname = args.get("lastname", None)
@@ -93,13 +98,18 @@ class Signup(Resource):
         newuser = User(
             name=name, username=username, email=email, password=password, role="user"
         )
+
+
         db.session.add(newuser)
         db.session.commit()
-        return {"USER SUCCESSFULLY CREATED"}
 
+        valid_user["user"]=args
+        valid_user["token"]=jwt.encode({'uid': user.uid,'exp' : datetime.utcnow() + timedelta(minutes = 30)}, app.config['SECRET_KEY'])
+        return valid_user
 
 class Login(Resource):
     def post(self):
+        valid_user = {}
         args = login_user_parser.parse_args()
         print(args)
         email = args.get("email", None)
@@ -115,14 +125,17 @@ class Login(Resource):
         if user:
             if user.password == password:
                 u_id = user.user_id
-                return jsonify(
-                    {
-                        "userId": u_id,
-                        "name": user.name,
-                        "username": user.username,
-                        "userRole": user.role,
-                    }
-                )
+                valid_user["user"]=args
+                valid_user["token"]=jwt.encode({'uid': user.uid,'exp' : datetime.utcnow() + timedelta(minutes = 30)}, app.config['SECRET_KEY'])
+                return valid_user
+                # return jsonify(
+                #     {
+                #         "userId": u_id,
+                #         "name": user.name,
+                #         "username": user.username,
+                #         "userRole": user.role,
+                #     }
+                # )
             else:
                 abort(404, message="Invalid Password")
 
@@ -131,6 +144,7 @@ class Login(Resource):
 
 
 class Logout(Resource):
+    @auth_required
     def get(self, userId=None):
         if userId:
             user = User.query.filter(User.user_id == userId).first()
@@ -143,6 +157,7 @@ class Logout(Resource):
 
 
 class Profile(Resource):
+    @auth_required
     def get(self, userId=None):
         results = []
         if userId:
@@ -174,6 +189,7 @@ class Profile(Resource):
 
 
 class Booking(Resource):
+    @auth_required
     def post(self, userId=None):
         args = create_booking_parser.parse_args()
         print(type(args))
@@ -203,6 +219,7 @@ class Booking(Resource):
 
 
 class VenueApi(Resource):
+    @auth_required
     def get(self, venueId=None):
         if venueId:
             ven = Venue.query.filter(Venue.venue_id == venueId).first()
@@ -281,6 +298,7 @@ class VenueApi(Resource):
 
 
 class ShowApi(Resource):
+    @auth_required
     def get(self, showId=None, venueId=None):
         if showId:
             show = Show.query.filter(Show.show_id == showId).first()
@@ -366,18 +384,8 @@ class ShowApi(Resource):
         else:
             abort(404, message="Show venue id")
 
-class GetShowList(Resource):
-    def get(self, venueId):
-        show = Show.query.filter(Show.venue_id == venueId)
-
-        filtered_json = []
-        for s in show:
-            record_json = json.dumps(s)
-            filtered_json.insert(0, record_json)
-        return {'data' : filtered_json}
-api.add_resource(GetShowList,"/api/getVenueShow/<int:venueId>")
-
 class GetVenueList(Resource):
+    @auth_required
     def get(self):
         venue = Venue.query.all()
         filtered_json = [ven.to_dict() for ven in venue]
@@ -385,6 +393,7 @@ class GetVenueList(Resource):
 
 
 class GetShowList(Resource):
+    @auth_required
     def get(self, venueId):
         show = Show.query.filter(Show.venue_id == venueId)
 
