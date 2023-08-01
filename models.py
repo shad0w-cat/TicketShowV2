@@ -37,6 +37,17 @@ class Show(db.Model):
         db.Integer, db.ForeignKey("venue.venue_id", ondelete="CASCADE"), nullable=False
     )
 
+    def to_dict(self):
+        return {
+            "show_id": self.show_id,
+            "venue_id": self.venue_id,
+            "name": self.name,
+            "price": self.price,
+            "available_seats": self.available_seats,
+            "tags": self.tags,
+            "rating": self.rating,
+        }
+
 
 class User(db.Model):
     __tablename__ = "user"

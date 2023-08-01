@@ -5,8 +5,8 @@
             <br />
             <form @submit.prevent="adminLogin">
                 <div class="form-group">
-                    <label for="adminUsername">Username</label>
-                    <input type="text" id="adminUsername" v-model="adminLoginForm.username" class="form-control">
+                    <label for="adminUsername">Email</label>
+                    <input type="email" id="adminUsername" v-model="adminLoginForm.email" class="form-control">
                 </div>
                 <br />
                 <div class="form-group">
@@ -21,13 +21,11 @@
 </template>
 
 <script>
-// import axios from 'axios';
-
 export default {
     data() {
         return {
             adminLoginForm: {
-                username: '',
+                email: '',
                 password: ''
             },
         };
@@ -35,10 +33,13 @@ export default {
     methods: {
         async adminLogin() {
             try {
-                // const response = await axios.post('/login', {
-                //     username: this.adminLoginForm.username,
-                //     password: this.adminLoginForm.password
-                // });
+                const response = await fetch('/api/login', {
+                    method: "POST",
+                    body: JSON.stringify({
+                        email: this.adminLoginForm.email,
+                        password: this.adminLoginForm.password
+                    })
+                });
 
                 // const token = response.data.token;
                 // const expirationDays = 7;
@@ -46,7 +47,7 @@ export default {
                 // expirationDate.setDate(expirationDate.getDate() + expirationDays);
                 // document.cookie = `admin_token=${token}; expires=${expirationDate.toUTCString()}; path=/`;
 
-                // console.log('API response:', response.data);
+                console.log('API response:', response.data);
 
                 localStorage.setItem('username', this.adminLoginForm.username)
                 localStorage.setItem('userRole', 'admin')

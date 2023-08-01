@@ -8,7 +8,7 @@
             <h6>{{ venue.place }}, {{ venue.location }}</h6>
 
             <div class="shows-container-admin">
-                <ShowCard v-for="show in venue.shows" :key="show.id" :show="show" />
+                <ShowCard v-for="show in shows" :key="show.id" :show="show" />
             </div>
             <button @click="showAddShowModal" class="addButtonV">+</button>
             <br />
@@ -30,6 +30,7 @@ import EditVenueModal from './VenueModal.vue';
 export default {
     data: () => {
         return {
+            shows: [],
             showEditVenue: false,
             showAddShow: false,
         }
@@ -87,10 +88,9 @@ export default {
     },
     async mounted() {
         try {
-            const venuesResponse = await fetch('http://127.0.0.1:8081/api/show/None/1');
-            const venuesData = await venuesResponse.json();
-            this.venues = Object.values(venuesData).pop();
-
+            const getVenueShow = await fetch(`http://127.0.0.1:8081/api/getVenueShow/${this.venue.venue_id}`);
+            const showsData = await getVenueShow.json();
+            this.shows = Object.values(showsData).pop();
         } catch (error) {
             console.error('Error fetching venues:', error);
         }

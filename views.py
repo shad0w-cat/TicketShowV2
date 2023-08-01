@@ -99,13 +99,16 @@ class Signup(Resource):
             name=name, username=username, email=email, password=password, role="user"
         )
 
-
         db.session.add(newuser)
         db.session.commit()
 
-        valid_user["user"]=args
-        valid_user["token"]=jwt.encode({'uid': user.uid,'exp' : datetime.utcnow() + timedelta(minutes = 30)}, app.config['SECRET_KEY'])
+        valid_user["user"] = args
+        valid_user["token"] = jwt.encode(
+            {"uid": user.uid, "exp": datetime.utcnow() + timedelta(minutes=30)},
+            app.config["SECRET_KEY"],
+        )
         return valid_user
+
 
 class Login(Resource):
     def post(self):
@@ -125,8 +128,11 @@ class Login(Resource):
         if user:
             if user.password == password:
                 u_id = user.user_id
-                valid_user["user"]=args
-                valid_user["token"]=jwt.encode({'uid': user.uid,'exp' : datetime.utcnow() + timedelta(minutes = 30)}, app.config['SECRET_KEY'])
+                valid_user["user"] = args
+                valid_user["token"] = jwt.encode(
+                    {"uid": user.uid, "exp": datetime.utcnow() + timedelta(minutes=30)},
+                    app.config["SECRET_KEY"],
+                )
                 return valid_user
                 # return jsonify(
                 #     {
@@ -384,6 +390,7 @@ class ShowApi(Resource):
         else:
             abort(404, message="Show venue id")
 
+
 class GetVenueList(Resource):
     @auth_required
     def get(self):
@@ -395,13 +402,10 @@ class GetVenueList(Resource):
 class GetShowList(Resource):
     @auth_required
     def get(self, venueId):
-        show = Show.query.filter(Show.venue_id == venueId)
-
-        filtered_json = []
-        for s in show:
-            record_json = json.dumps(s)
-            filtered_json.insert(0, record_json)
+        shows = Show.query.filter(Show.venue_id == venueId)
+        filtered_json = [show.to_dict() for show in shows]
         return {"data": filtered_json}
+
 
 api.add_resource(GetShowList, "/api/getVenueShow/<int:venueId>")
 api.add_resource(Signup, "/api/signup")

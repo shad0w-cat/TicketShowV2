@@ -106,7 +106,7 @@ export default {
 
 <style>
 .add-show-modal {
-    z-index: 1veb;
+    z-index: 1;
     background-color: #0f0f0f6c;
     position: absolute;
     top: 0%;
