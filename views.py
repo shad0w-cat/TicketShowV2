@@ -112,7 +112,6 @@ class Signup(Resource):
 
 class Login(Resource):
     def post(self):
-        valid_user = {}
         args = login_user_parser.parse_args()
         print(args)
         email = args.get("email", None)
@@ -127,21 +126,21 @@ class Login(Resource):
         user = User.query.filter(User.email == email).first()
         if user:
             if user.password == password:
-                u_id = user.user_id
-                valid_user["user"] = args
-                valid_user["token"] = jwt.encode(
+                uid = user.user_id
+                jt = jwt.encode(
                     {"uid": user.uid, "exp": datetime.utcnow() + timedelta(minutes=30)},
                     app.config["SECRET_KEY"],
                 )
-                return valid_user
-                # return jsonify(
-                #     {
-                #         "userId": u_id,
-                #         "name": user.name,
-                #         "username": user.username,
-                #         "userRole": user.role,
-                #     }
-                # )
+                # return valid_user
+                return jsonify(
+                    {
+                        "userId": uid,
+                        "name": user.name,
+                        "username": user.username,
+                        "userRole": user.role,
+                        "token" : jt
+                    }
+                )
             else:
                 abort(404, message="Invalid Password")
 
