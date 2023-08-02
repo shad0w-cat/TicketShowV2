@@ -32,7 +32,8 @@ export default {
                 method: 'POST',
                 headers: {
                     'Accept': 'application/json',
-                    'Content-Type': 'application/json'
+                    'Content-Type': 'application/json',
+                    'access-token': localStorage.getItem("token")
                 },
                 body: JSON.stringify(newVenue)
             });
@@ -42,7 +43,13 @@ export default {
         },
         async fetchVenues() {
             try {
-                const venuesResponse = await fetch('http://127.0.0.1:8081/api/getVenue');
+                const venuesResponse = await fetch('http://127.0.0.1:8081/api/getVenue',
+                    {
+                        headers: {
+                            'access-token': localStorage.getItem("token")
+                        }
+                    });
+
                 const venuesData = await venuesResponse.json();
                 this.venues = Object.values(venuesData).pop();
 
