@@ -61,7 +61,8 @@ export default {
                 method: 'POST',
                 headers: {
                     'Accept': 'application/json',
-                    'Content-Type': 'application/json'
+                    'Content-Type': 'application/json',
+                    'access-token': localStorage.getItem("token")
                 },
                 body: JSON.stringify(newShow),
             });
@@ -74,7 +75,8 @@ export default {
                 method: 'PUT',
                 headers: {
                     'Accept': 'application/json',
-                    'Content-Type': 'application/json'
+                    'Content-Type': 'application/json',
+                    'access-token': localStorage.getItem("token")
                 },
                 body: JSON.stringify(editVenue)
             });
@@ -82,13 +84,24 @@ export default {
             this.$emit('onUpdate');
         },
         async deleteVenue() {
-            const rawResponse = fetch(`http://127.0.0.1:8081/api/venue/${this.venue.venue_id}`, { method: 'DELETE' })
+            const rawResponse = fetch(`http://127.0.0.1:8081/api/venue/${this.venue.venue_id}`, {
+                method: 'DELETE',
+                headers: {
+                    'access-token': localStorage.getItem("token")
+                }
+            })
             console.log('Delete venue:', rawResponse);
         },
     },
     async mounted() {
         try {
-            const getVenueShow = await fetch(`http://127.0.0.1:8081/api/getVenueShow/${this.venue.venue_id}`);
+            const getVenueShow = await fetch(`http://127.0.0.1:8081/api/getVenueShow/${this.venue.venue_id}`,
+                {
+                    headers: {
+                        'access-token': localStorage.getItem("token")
+                    }
+                }
+            );
             const showsData = await getVenueShow.json();
             this.shows = Object.values(showsData).pop();
         } catch (error) {

@@ -33,24 +33,24 @@ export default {
     methods: {
         async adminLogin() {
             try {
-                const response = await fetch('/api/login', {
+                const rawResponse = await fetch('http://127.0.0.1:8081/api/login', {
                     method: "POST",
                     body: JSON.stringify({
                         email: this.adminLoginForm.email,
                         password: this.adminLoginForm.password
-                    })
+                    }),
+                    headers: {
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json',
+                    },
                 });
 
-                // const token = response.data.token;
-                // const expirationDays = 7;
-                // const expirationDate = new Date();
-                // expirationDate.setDate(expirationDate.getDate() + expirationDays);
-                // document.cookie = `admin_token=${token}; expires=${expirationDate.toUTCString()}; path=/`;
+                const response = await rawResponse.json()
+                console.log('API response:', response);
 
-                console.log('API response:', response.data);
-
-                localStorage.setItem('username', this.adminLoginForm.username)
+                localStorage.setItem('username', response.username)
                 localStorage.setItem('userRole', 'admin')
+                localStorage.setItem('token', response.token)
                 this.onSuccessfulLogin();
 
             } catch (error) {
@@ -59,8 +59,8 @@ export default {
             }
         },
         onSuccessfulLogin() {
-            // this.$router.push('/');
-            window.location.href = '/';
+            this.$router.push('/');
+            // window.location.href = '/';
         }
     }
 };

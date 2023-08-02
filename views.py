@@ -13,7 +13,6 @@ import jwt
 import pandas as pd
 
 api = Api()
-app = ""
 
 ven = {
     "venue_id": fields.Integer,
@@ -105,6 +104,7 @@ class Signup(Resource):
         db.session.commit()
 
         valid_user["user"] = args
+        app = current_app._get_current_object()
         valid_user["token"] = jwt.encode(
             {"uid": user.uid, "exp": datetime.utcnow() + timedelta(minutes=30)},
             app.config["SECRET_KEY"],
@@ -126,11 +126,12 @@ class Login(Resource):
             return {"message": "Password can not be empty"}, 404
 
         user = User.query.filter(User.email == email).first()
+        app = current_app._get_current_object()
         if user:
             if user.password == password:
                 uid = user.user_id
                 jt = jwt.encode(
-                    {"uid": user.uid, "exp": datetime.utcnow() + timedelta(minutes=30)},
+                    {"uid": uid, "exp": datetime.utcnow() + timedelta(minutes=30)},
                     app.config["SECRET_KEY"],
                 )
                 # return valid_user
@@ -140,7 +141,7 @@ class Login(Resource):
                         "name": user.name,
                         "username": user.username,
                         "userRole": user.role,
-                        "token" : jt
+                        "token": jt,
                     }
                 )
             else:
@@ -231,12 +232,14 @@ class VenueApi(Resource):
         if venueId:
             ven = Venue.query.filter(Venue.venue_id == venueId).first()
             if ven:
-                return jsonify({
-                    "name" : ven.name,
-                    "place" : ven.place,
-                    "location" : ven.location,
-                    "capacity" : ven.capacity
-                })
+                return jsonify(
+                    {
+                        "name": ven.name,
+                        "place": ven.place,
+                        "location": ven.location,
+                        "capacity": ven.capacity,
+                    }
+                )
             else:
                 return "Venue does not exist", 200
 
@@ -293,12 +296,14 @@ class VenueApi(Resource):
                 ven.capacity = capacity
             db.session.commit()
 
-            return jsonify({
-                    "name" : ven.name,
-                    "place" : ven.place,
-                    "location" : ven.location,
-                    "capacity" : ven.capacity
-                })
+            return jsonify(
+                {
+                    "name": ven.name,
+                    "place": ven.place,
+                    "location": ven.location,
+                    "capacity": ven.capacity,
+                }
+            )
         else:
             abort(404, "invalid card")
 
@@ -321,23 +326,27 @@ class ShowApi(Resource):
         if showId:
             show = Show.query.filter(Show.show_id == showId).first()
             if show:
-                return jsonify({
-                    "name" : show.name,
-                    "price" : show.price,
-                    "available_seats" : show.available_seats,
-                    "tags" : show.tags
-                })
+                return jsonify(
+                    {
+                        "name": show.name,
+                        "price": show.price,
+                        "available_seats": show.available_seats,
+                        "tags": show.tags,
+                    }
+                )
             else:
                 return "Show does not exist with this id", 200
         elif venueId:
             show = Show.query.filter(Show.venue_id == venueId).first()
             if show:
-                return jsonify({
-                    "name" : show.name,
-                    "price" : show.price,
-                    "available_seats" : show.available_seats,
-                    "tags" : show.tags
-                })
+                return jsonify(
+                    {
+                        "name": show.name,
+                        "price": show.price,
+                        "available_seats": show.available_seats,
+                        "tags": show.tags,
+                    }
+                )
             else:
                 return "Show does not exist with this venue id", 200
         else:
@@ -396,12 +405,14 @@ class ShowApi(Resource):
                 show.available_seats = seats
 
             db.session.commit()
-            return jsonify({
-                "name" : show.name,
-                "price" : show.price,
-                "available_seats" : show.available_seats,
-                "tags" : show.tags
-            })
+            return jsonify(
+                {
+                    "name": show.name,
+                    "price": show.price,
+                    "available_seats": show.available_seats,
+                    "tags": show.tags,
+                }
+            )
         else:
             abort(404, "invalid card")
 
