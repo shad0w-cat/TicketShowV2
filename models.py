@@ -13,15 +13,6 @@ class Venue(db.Model):
     location = db.Column(db.String, nullable=False)
     capacity = db.Column(db.Integer, nullable=False)
 
-    def to_dict(self):
-        return {
-            "venue_id": self.venue_id,
-            "name": self.name,
-            "place": self.place,
-            "location": self.location,
-            "capacity": self.capacity,
-        }
-
 
 class Show(db.Model):
     __tablename__ = "show"
@@ -36,17 +27,6 @@ class Show(db.Model):
     venue_id = db.Column(
         db.Integer, db.ForeignKey("venue.venue_id", ondelete="CASCADE"), nullable=False
     )
-
-    def to_dict(self):
-        return {
-            "show_id": self.show_id,
-            "venue_id": self.venue_id,
-            "name": self.name,
-            "price": self.price,
-            "available_seats": self.available_seats,
-            "tags": self.tags,
-            "rating": self.rating,
-        }
 
 
 class User(db.Model):

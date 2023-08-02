@@ -229,7 +229,12 @@ class VenueApi(Resource):
         if venueId:
             ven = Venue.query.filter(Venue.venue_id == venueId).first()
             if ven:
-                return ven
+                return jsonify({
+                    "name" : ven.name,
+                    "place" : ven.place,
+                    "location" : ven.location,
+                    "capacity" : ven.capacity
+                })
             else:
                 return "Venue does not exist", 200
 
@@ -285,7 +290,13 @@ class VenueApi(Resource):
             if capacity:
                 ven.capacity = capacity
             db.session.commit()
-            return ven.to_dict()
+
+            return jsonify({
+                    "name" : ven.name,
+                    "place" : ven.place,
+                    "location" : ven.location,
+                    "capacity" : ven.capacity
+                })
         else:
             abort(404, "invalid card")
 
@@ -308,13 +319,23 @@ class ShowApi(Resource):
         if showId:
             show = Show.query.filter(Show.show_id == showId).first()
             if show:
-                return show
+                return jsonify({
+                    "name" : show.name,
+                    "price" : show.price,
+                    "available_seats" : show.available_seats,
+                    "tags" : show.tags
+                })
             else:
                 return "Show does not exist with this id", 200
         elif venueId:
             show = Show.query.filter(Show.venue_id == venueId).first()
             if show:
-                return show
+                return jsonify({
+                    "name" : show.name,
+                    "price" : show.price,
+                    "available_seats" : show.available_seats,
+                    "tags" : show.tags
+                })
             else:
                 return "Show does not exist with this venue id", 200
         else:
@@ -373,7 +394,12 @@ class ShowApi(Resource):
                 show.available_seats = seats
 
             db.session.commit()
-            return ven
+            return jsonify({
+                "name" : show.name,
+                "price" : show.price,
+                "available_seats" : show.available_seats,
+                "tags" : show.tags
+            })
         else:
             abort(404, "invalid card")
 
