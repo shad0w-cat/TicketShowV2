@@ -11,6 +11,7 @@ from datetime import datetime
 from jwt_auth import auth_required
 import jwt
 import pandas as pd
+from flask_caching import Cache
 
 api = Api()
 
@@ -65,10 +66,17 @@ def initialize_views(app):
     app = app
     api.init_app(app)
 
+app = current_app
+# app.config["CACHE_TYPE"] = "RedisCache"
+# app.config['CACHE_REDIS_HOST'] = "localhost"
+# app.config['CACHE_REDIS_PORT'] = 6379
+# app.config["CACHE_REDIS_URL"] = "redis://localhost:6379"  
+# app.config['CACHE_DEFAULT_TIMEOUT'] = 200
+# cache = Cache(app)
+
 
 class Signup(Resource):
     def post(self):
-        valid_user = {}
         args = create_user_parser.parse_args()
         firstname = args.get("firstname", None)
         lastname = args.get("lastname", None)
@@ -103,13 +111,22 @@ class Signup(Resource):
         db.session.add(newuser)
         db.session.commit()
 
-        valid_user["user"] = args
-        app = current_app._get_current_object()
-        valid_user["token"] = jwt.encode(
-            {"uid": user.uid, "exp": datetime.utcnow() + timedelta(minutes=30)},
+        uid = newuser.user_id
+        # app = current_app._get_current_object()
+        jt = jwt.encode(
+            {"uid": uid, "exp": datetime.utcnow() + timedelta(minutes=30)},
             app.config["SECRET_KEY"],
         )
-        return valid_user
+        # return valid_user
+        return jsonify(
+            {
+                "userId": uid,
+                "name": user.name,
+                "username": user.username,
+                "userRole": user.role,
+                "token": jt,
+            }
+        )
 
 
 class Login(Resource):
@@ -456,82 +473,41 @@ class GetUserRole(Resource):
         else:
             abort(404, message = "User Id not provided")
 
-# class ExportVenue(Resource):
-#     @auth_required
-#     def get(self,venueId=None):
+class ExportVenue(Resource):
+    @auth_required
+    def get(self,venueId=None):
         
-#         username = []
-#         shows = []
-#         bookings = []
-#         ratings = []
+        username = []
+        shows = []
+        bookings = []
+        ratings = []
 
-#         if venueId:
-#             venues = user_show.query.filter(user_show.venue_id == venueId).all()
-#             Venue.query.filter(Venue.venue_id == )
-#             if venues:
-#                 for record in venues:
-#                     if record.rated != "":
-#                         ratings.append(record.rated)
-#                     else:
-#                         ratings.append("Not rated")
+        if venueId:
+            venues = user_show.query.filter(user_show.venue_id == venueId).all()
+            venue_name = Venue.query.filter(Venue.venue_id == venueId).first().name
+            if venues:
+                for record in venues:
+                    if record.rated != "":
+                        ratings.append(record.rated)
+                    else:
+                        ratings.append("Not rated")
                     
-#                     username.append((User.query.filter(User.user_id == record.user_id).first()).name)
-#                     shows.append((Show.query.filter(Show.show_id == record.show_id).first()).name)
-#                     bookings.append(record.booking_time)
+                    username.append((User.query.filter(User.user_id == record.user_id).first()).name)
+                    shows.append((Show.query.filter(Show.show_id == record.show_id).first()).name)
+                    bookings.append(record.booking_time)
 
-#                 Username = pd.Series(username)
-#                 Shows = pd.Series(shows)
-#                 Bookings = pd.Series(bookings)
-#                 Ratings = pd.Series(ratings)
+                Username = pd.Series(username)
+                Shows = pd.Series(shows)
+                Bookings = pd.Series(bookings)
+                Ratings = pd.Series(ratings)
 
-#                 df = pd.DataFrame({'User' : Username, 'Shows' : Shows, 'Booked On' : Bookings, "Ratings" : Ratings})
-#                 df.to_csv(f"{ve")
-#             else:
-#                 abort(404, "no bookings for this venue")
+                df = pd.DataFrame({'User' : Username, 'Shows' : Shows, 'Booked On' : Bookings, "Ratings" : Ratings})
+                df.to_csv(f"{venue_name}.csv")
+            else:
+                abort(404, "no bookings for this venue")
             
-
-#         else:
-#             abort(404,message="Venue id not provided")
-#         lname=[]
-#         ldescription=[]
-#         ctitle=[]
-#         ccontent=[]
-#         cdeadline=[]
-#         if uid:
-#             user=USER.query.filter(USER.uid==uid).first()
-#             if user:
-#                 data=np.array([user.name])
-#                 username=pd.Series(data)
-#                 lists=LIST.query.filter(LIST.uid==uid).all()
-#                 for i in lists:
-#                     lname.append(i.lname)
-#                     ldescription.append(i.description)
-
-#                     cards=CARD.query.filter(CARD.lid==i.lid).all()
-#                     for j in cards:
-#                         ctitle.append(j.title)
-#                         ccontent.append(j.content)
-#                         cdeadline.append(j.deadline)
-#                 lnamedata=np.array(lname)
-#                 Lname=pd.Series(lnamedata)
-#                 ldescriptiondata=np.array(ldescription)
-#                 Ldescription=pd.Series(ldescriptiondata)
-#                 ctitledata=np.array(ctitle)
-#                 Ctitle=pd.Series(ctitledata)
-#                 ccontentdata=np.array(ccontent)
-#                 Ccontent=pd.Series(ccontentdata)
-#                 cdeadlinedata=np.array(cdeadline)
-#                 Cdeadline=pd.Series(cdeadlinedata)
-#                 df = pd.DataFrame({'username': username,'list name': Lname,'list description': Ldescription,'card name': Ctitle,'Card description': Ccontent,'card deadline': Cdeadline}) 
-#                 df.to_csv('file_dashboard.csv')
-#                 return user
-#             else:
-#                 abort(404,message="Invalid User")
-#         else:
-#             abort(404,message="Invalid UID")
-
-# api.add_resource(Export_Dashboard,"/api/export_dashboard/<int:uid>")
-
+        else:
+            abort(404,message="Venue id not provided")
 
 api.add_resource(GetShowList, "/api/getVenueShow/<int:venueId>")
 api.add_resource(Signup, "/api/signup")
@@ -542,3 +518,4 @@ api.add_resource(ShowApi, "/api/show/<int:showId>/<int:venueId>")
 api.add_resource(GetVenueList, "/api/getVenue")
 api.add_resource(Profile, "/api/userProfile/<int:userId>")
 api.add_resource(GetUserRole, "/api/getUserRole/<int:userId>")
+api.add_resource(ExportVenue,"/api/exportVenue/<int:venueId>")
