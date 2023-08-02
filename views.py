@@ -450,7 +450,14 @@ class GetVenueList(Resource):
     @auth_required
     def get(self):
         venue = Venue.query.all()
-        filtered_json = [ven.to_dict() for ven in venue]
+        filtered_json = []
+        for ven in venue:
+            filtered_json.append({
+                    "name": ven.name,
+                    "place": ven.place,
+                    "location": ven.location,
+                    "capacity": ven.capacity,
+                })
         return {"data": filtered_json}
 
 
@@ -458,8 +465,16 @@ class GetShowList(Resource):
     @auth_required
     def get(self, venueId = None):
         if venueId:
+            filtered_json = []
             shows = Show.query.filter(Show.venue_id == venueId)
-            filtered_json = [show.to_dict() for show in shows]
+            for show in shows:
+                filtered_json.append({
+                    "name": show.name,
+                    "price": show.price,
+                    "available_seats": show.available_seats,
+                    "tags": show.tags,
+                    "ratings" : show.rating
+                })
             return {"data": filtered_json}
         else:
             abort(404, message="Venue Id not provided")
