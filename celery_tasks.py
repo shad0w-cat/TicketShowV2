@@ -50,8 +50,9 @@ def monthly_task():
                 
                 if (show.name in d.keys()) and (d[show.name]['booking'] == booking.date()):
                     d[show.name]["count"] += 1
+                    d[show.name]["booking"].append(booking.date())
                     continue
-                d[show.name] = {'count' : 1, 'booking' : booking.date()}
+                d[show.name] = {'count' : 1, 'booking' : [booking.date()]}
 
         with open("project/public/monthly.html","r") as b:
             html=Template(b.read())

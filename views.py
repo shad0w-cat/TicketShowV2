@@ -1,4 +1,5 @@
 from ast import arg
+from email import message
 from re import A
 from flask_restful import Resource, reqparse, marshal, Api, fields, marshal_with, abort
 from flask import current_app, jsonify, send_from_directory, session
@@ -9,6 +10,7 @@ import json
 from datetime import datetime
 from jwt_auth import auth_required
 import jwt
+import pandas as pd
 
 api = Api()
 app = ""
@@ -426,10 +428,98 @@ class GetVenueList(Resource):
 
 class GetShowList(Resource):
     @auth_required
-    def get(self, venueId):
-        shows = Show.query.filter(Show.venue_id == venueId)
-        filtered_json = [show.to_dict() for show in shows]
-        return {"data": filtered_json}
+    def get(self, venueId = None):
+        if venueId:
+            shows = Show.query.filter(Show.venue_id == venueId)
+            filtered_json = [show.to_dict() for show in shows]
+            return {"data": filtered_json}
+        else:
+            abort(404, message="Venue Id not provided")
+
+class GetUserRole(Resource):
+    @auth_required
+    def get(self, userId = None):
+        if userId:
+            user = User.query.filter(User.user_id == userId).first()
+            return user.role, 200
+        else:
+            abort(404, message = "User Id not provided")
+
+# class ExportVenue(Resource):
+#     @auth_required
+#     def get(self,venueId=None):
+        
+#         username = []
+#         shows = []
+#         bookings = []
+#         ratings = []
+
+#         if venueId:
+#             venues = user_show.query.filter(user_show.venue_id == venueId).all()
+#             Venue.query.filter(Venue.venue_id == )
+#             if venues:
+#                 for record in venues:
+#                     if record.rated != "":
+#                         ratings.append(record.rated)
+#                     else:
+#                         ratings.append("Not rated")
+                    
+#                     username.append((User.query.filter(User.user_id == record.user_id).first()).name)
+#                     shows.append((Show.query.filter(Show.show_id == record.show_id).first()).name)
+#                     bookings.append(record.booking_time)
+
+#                 Username = pd.Series(username)
+#                 Shows = pd.Series(shows)
+#                 Bookings = pd.Series(bookings)
+#                 Ratings = pd.Series(ratings)
+
+#                 df = pd.DataFrame({'User' : Username, 'Shows' : Shows, 'Booked On' : Bookings, "Ratings" : Ratings})
+#                 df.to_csv(f"{ve")
+#             else:
+#                 abort(404, "no bookings for this venue")
+            
+
+#         else:
+#             abort(404,message="Venue id not provided")
+#         lname=[]
+#         ldescription=[]
+#         ctitle=[]
+#         ccontent=[]
+#         cdeadline=[]
+#         if uid:
+#             user=USER.query.filter(USER.uid==uid).first()
+#             if user:
+#                 data=np.array([user.name])
+#                 username=pd.Series(data)
+#                 lists=LIST.query.filter(LIST.uid==uid).all()
+#                 for i in lists:
+#                     lname.append(i.lname)
+#                     ldescription.append(i.description)
+
+#                     cards=CARD.query.filter(CARD.lid==i.lid).all()
+#                     for j in cards:
+#                         ctitle.append(j.title)
+#                         ccontent.append(j.content)
+#                         cdeadline.append(j.deadline)
+#                 lnamedata=np.array(lname)
+#                 Lname=pd.Series(lnamedata)
+#                 ldescriptiondata=np.array(ldescription)
+#                 Ldescription=pd.Series(ldescriptiondata)
+#                 ctitledata=np.array(ctitle)
+#                 Ctitle=pd.Series(ctitledata)
+#                 ccontentdata=np.array(ccontent)
+#                 Ccontent=pd.Series(ccontentdata)
+#                 cdeadlinedata=np.array(cdeadline)
+#                 Cdeadline=pd.Series(cdeadlinedata)
+#                 df = pd.DataFrame({'username': username,'list name': Lname,'list description': Ldescription,'card name': Ctitle,'Card description': Ccontent,'card deadline': Cdeadline}) 
+#                 df.to_csv('file_dashboard.csv')
+#                 return user
+#             else:
+#                 abort(404,message="Invalid User")
+#         else:
+#             abort(404,message="Invalid UID")
+
+# api.add_resource(Export_Dashboard,"/api/export_dashboard/<int:uid>")
 
 
 api.add_resource(GetShowList, "/api/getVenueShow/<int:venueId>")
@@ -440,3 +530,4 @@ api.add_resource(VenueApi, "/api/venue/<int:venueId>")
 api.add_resource(ShowApi, "/api/show/<int:showId>/<int:venueId>")
 api.add_resource(GetVenueList, "/api/getVenue")
 api.add_resource(Profile, "/api/userProfile/<int:userId>")
+api.add_resource(GetUserRole, "/api/getUserRole/<int:userId>")
