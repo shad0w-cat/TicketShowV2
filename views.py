@@ -121,9 +121,9 @@ class Signup(Resource):
         return jsonify(
             {
                 "userId": uid,
-                "name": user.name,
-                "username": user.username,
-                "userRole": user.role,
+                "name": newuser.name,
+                "username": newuser.username,
+                "userRole": newuser.role,
                 "token": jt,
             }
         )
