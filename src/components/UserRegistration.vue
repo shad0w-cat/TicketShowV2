@@ -1,17 +1,32 @@
 <template>
     <div class="container d-flex justify-content-center align-items-center">
         <div class="login-form">
-            <h2>Admin Login</h2>
+            <h2>User Registration</h2>
             <br />
-            <form @submit.prevent="adminLogin">
+            <form @submit.prevent="userRegistration">
+                <div class="form-group">
+                    <label for="firstname">First Name</label>
+                    <input type="text" id="firstname" v-model="userRegistrationForm.firstname" class="form-control">
+                </div>
+                <br />
+                <div class="form-group">
+                    <label for="lastname">Password</label>
+                    <input type="text" id="lastname" v-model="userRegistrationForm.lastname" class="form-control">
+                </div>
+                <br />
+                <div class="form-group">
+                    <label for="username">Username</label>
+                    <input type="text" id="username" v-model="userRegistrationForm.username" class="form-control">
+                </div>
+                <br />
                 <div class="form-group">
                     <label for="adminUsername">Email</label>
-                    <input type="email" id="adminUsername" v-model="adminLoginForm.email" class="form-control">
+                    <input type="email" id="adminUsername" v-model="userRegistrationForm.email" class="form-control">
                 </div>
                 <br />
                 <div class="form-group">
                     <label for="adminPassword">Password</label>
-                    <input type="password" id="adminPassword" v-model="adminLoginForm.password" class="form-control">
+                    <input type="password" id="adminPassword" v-model="userRegistrationForm.password" class="form-control">
                 </div>
                 <br />
                 <button type="submit" class="btn btn-primary">Login</button>
@@ -24,21 +39,21 @@
 export default {
     data() {
         return {
-            adminLoginForm: {
+            userRegistrationForm: {
                 email: '',
+                firstname: '',
+                lastname: '',
+                username: '',
                 password: ''
             },
         };
     },
     methods: {
-        async adminLogin() {
+        async userRegistration() {
             try {
-                const rawResponse = await fetch('http://127.0.0.1:8081/api/login', {
+                const rawResponse = await fetch('http://127.0.0.1:8081/api/signup', {
                     method: "POST",
-                    body: JSON.stringify({
-                        email: this.adminLoginForm.email,
-                        password: this.adminLoginForm.password
-                    }),
+                    body: JSON.stringify(this.userRegistrationForm),
                     headers: {
                         'Accept': 'application/json',
                         'Content-Type': 'application/json',
@@ -49,18 +64,18 @@ export default {
                 console.log('API response:', response);
 
                 localStorage.setItem('username', response.username)
-                localStorage.setItem('userRole', 'admin')
+                localStorage.setItem('userId', response.userId)
                 localStorage.setItem('token', response.token)
-                this.onSuccessfulLogin();
+                this.onSuccessfulRegistration();
 
             } catch (error) {
                 // Handle any errors that occurred during the API call
                 console.error('API error:', error);
             }
         },
-        onSuccessfulLogin() {
-            this.$router.push('/');
-            // window.location.href = '/';
+        onSuccessfulRegistration() {
+            // this.$router.push('/');
+            window.location.href = '/';
         }
     }
 };

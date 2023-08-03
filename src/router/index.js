@@ -1,10 +1,10 @@
 import { createRouter, createWebHistory } from 'vue-router';
 import Layout from '@/components/Layout/MainLayout.vue';
-import AdminLogin from '../components/AdminLogin.vue';
+import UserRegistration from '../components/UserRegistration.vue';
 import AdminDashboard from '../components/AdminDashboard.vue';
 import UserDashboard from '../components/UserDashboard.vue';
 import UserLogin from '../components/UserLogin.vue';
-// import axios from 'axios';
+import { getUserRole } from '@/utils';
 
 const UserRoles = {
   Admin: 'admin',
@@ -21,9 +21,9 @@ const router = createRouter({
       meta: { requiresAuth: false },
     },
     {
-      path: '/admin',
-      name: 'Admin Login',
-      component: AdminLogin,
+      path: '/signup',
+      name: 'Registration',
+      component: UserRegistration,
       meta: { requiresAuth: false },
     },
     {
@@ -36,11 +36,12 @@ const router = createRouter({
       children: [
         {
           path: '',
-          component: () => {
-            const userRole = getUserRole();
+          component: async () => {
+            const userRole = await getUserRole();
             console.log(userRole);
 
             if (userRole === UserRoles.Admin) {
+              console.log('HERE');
               return AdminDashboard;
             } else {
               return UserDashboard;
@@ -52,17 +53,22 @@ const router = createRouter({
   ],
 });
 
-router.beforeEach((to, from, next) => {
+router.beforeEach(async (to, from, next) => {
   const requiresAuth = to.matched.some((record) => record.meta.requiresAuth);
-
-  if (requiresAuth && !isLoggedIn()) {
-    const requiredRoles = to.meta.requiredRoles;
-    const userRole = getUserRole();
-
-    if (!userRole || !requiredRoles.includes(userRole)) {
+  if (requiresAuth) {
+    if (!isLoggedIn()) {
       next('/login');
     } else {
-      next();
+      const requiredRoles = to.meta.requiredRoles;
+      const userRole = await getUserRole();
+      console.log(userRole);
+      if (!userRole || !requiredRoles.includes(userRole)) {
+        console.log('HERE ysrad sdafgsd');
+
+        next('/login');
+      } else {
+        next();
+      }
     }
   } else {
     next();
@@ -70,22 +76,9 @@ router.beforeEach((to, from, next) => {
 });
 
 function isLoggedIn() {
-  const token = localStorage.getItem('username');
+  const token = localStorage.getItem('token');
+  console.log(!!token);
   return !!token;
-}
-
-function getUserRole() {
-  return localStorage.getItem('userRole');
-  // try {
-  //   const response = await axios.get('127.0.0.1:8081/userRole', {
-  //     headers: {
-  //       Authorization: `Bearer ${localStorage.getItem('token')}`,
-  //     },
-  //   });
-  //   console.log('Data from new API call:', response.data);
-  // } catch (error) {
-  //   console.error('New API call error:', error);
-  // }
 }
 
 export default router;

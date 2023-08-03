@@ -5,9 +5,9 @@
             <br />
             <form @submit.prevent="userLogin" class="needs-validation">
                 <div class="form-group">
-                    <label for="userUsername">Username</label>
-                    <input type="text" id="userUsername" v-model="userLoginForm.username" class="form-control" required>
-                    <div class="invalid-feedback">Please enter your username.</div>
+                    <label for="userUsername">Email</label>
+                    <input type="email" id="userUsername" v-model="userLoginForm.email" class="form-control" required>
+                    <div class="invalid-feedback">Please enter your email.</div>
                 </div>
                 <br />
                 <div class="form-group">
@@ -29,7 +29,7 @@ export default {
     data() {
         return {
             userLoginForm: {
-                username: '',
+                email: '',
                 password: ''
             },
         };
@@ -37,32 +37,30 @@ export default {
     methods: {
         async userLogin() {
             try {
-                // const response = await axios.post('http://127.0.0.1:8081/login', {
-                //     username: this.userLoginForm.username,
-                //     password: this.userLoginForm.password
-                // });
+                const rawResponse = await fetch('http://127.0.0.1:8081/api/login', {
+                    method: "POST",
+                    body: JSON.stringify(this.userLoginForm),
+                    headers: {
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json',
+                    },
+                });
 
-                // // Handle the response from the API here
-                // // For example, you can check the response status or data
-                // const token = response.data.token;
-                // const expirationDays = 7;
-                // const expirationDate = new Date();
-                // expirationDate.setDate(expirationDate.getDate() + expirationDays);
-                // document.cookie = `user_token=${token}; expires=${expirationDate.toUTCString()}; path=/`;
+                const response = await rawResponse.json()
+                console.log('API response:', response);
 
-                // console.log('API response:', response.data);
-
-                localStorage.setItem('username', this.userLoginForm.username)
-                localStorage.setItem('userRole', 'user')
+                localStorage.setItem('username', response.username)
+                localStorage.setItem('token', response.token)
+                localStorage.setItem('userId', response.userId)
                 this.onSuccessfulLogin();
+
             } catch (error) {
                 // Handle any errors that occurred during the API call
                 console.error('API error:', error);
             }
         },
         redirectToUserRegistration() {
-            // Handle redirection to user registration page
-            console.log('Redirect to user registration');
+            this.$router.push("/signup")
         },
         onSuccessfulLogin() {
             // this.$router.push('/');

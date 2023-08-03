@@ -12,12 +12,13 @@
 <script>
 import AdminHeader from './AdminHeader.vue';
 import UserHeader from './UserHeader.vue';
+import { getUserRole } from '@/utils.js';
 
 export default {
     data() {
         return {
             username: localStorage.getItem('username'),
-            userRole: localStorage.getItem('userRole'),
+            userRole: null,
         };
     },
     methods: {
@@ -26,7 +27,7 @@ export default {
             this.redirectToLoginPage();
         },
         clearToken() {
-            document.cookie = "admin_token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+            localStorage.removeItem('token')
         },
         redirectToLoginPage() {
             this.$router.push('/login');
@@ -36,6 +37,11 @@ export default {
         AdminHeader,
         UserHeader,
     },
+
+    async created() {
+        this.userRole = await getUserRole();
+    },
+
 };
 </script>
 

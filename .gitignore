@@ -9,6 +9,7 @@ node_modules
 /env
 /pycache
 __pycache__
+__pycache__/
 
 # Log files
 npm-debug.log*
