@@ -21,6 +21,7 @@ class Show(db.Model):
     )
     name = db.Column(db.String, nullable=False)
     price = db.Column(db.Integer, nullable=False)
+    dateTime = db.Column(db.String, nullable=False)
     available_seats = db.Column(db.Integer, nullable=False)
     rating = db.Column(db.String, nullable=False)
     tags = db.Column(db.String, nullable=False)
@@ -50,5 +51,6 @@ class user_show(db.Model):
     show_id = db.Column(
         db.Integer, db.ForeignKey("show.show_id", ondelete="CASCADE"), nullable=False
     )
+    seats = db.Column(db.Integer, nullable=False)
     booking_time = db.Column(db.String, nullable=False)
     rated = db.Column(db.String)

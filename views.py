@@ -12,8 +12,10 @@ from jwt_auth import auth_required
 import jwt
 import pandas as pd
 from flask_caching import Cache
+import matplotlib.pyplot as plt
 
 api = Api()
+cache = Cache()
 
 ven = {
     "venue_id": fields.Integer,
@@ -45,6 +47,7 @@ login_user_parser.add_argument("password")
 create_show_parser = reqparse.RequestParser()
 create_show_parser.add_argument("showName")
 create_show_parser.add_argument("price")
+create_show_parser.add_argument("dateTime")
 create_show_parser.add_argument("available_seats")
 create_show_parser.add_argument("rating")
 create_show_parser.add_argument("tags")
@@ -60,19 +63,21 @@ create_booking_parser = reqparse.RequestParser()
 create_booking_parser.add_argument("userId")
 create_booking_parser.add_argument("showId")
 create_booking_parser.add_argument("rating")
+create_booking_parser.add_argument("seats")
 
 
 def initialize_views(app):
     app = app
     api.init_app(app)
+    app.config["CACHE_TYPE"] = "RedisCache"
+    app.config['CACHE_REDIS_HOST'] = "localhost"
+    app.config['CACHE_REDIS_PORT'] = 6379
+    app.config["CACHE_REDIS_URL"] = "redis://localhost:6379"  
+    app.config['CACHE_DEFAULT_TIMEOUT'] = 200
+    cache.init_app(app)
 
-app = current_app
-# app.config["CACHE_TYPE"] = "RedisCache"
-# app.config['CACHE_REDIS_HOST'] = "localhost"
-# app.config['CACHE_REDIS_PORT'] = 6379
-# app.config["CACHE_REDIS_URL"] = "redis://localhost:6379"  
-# app.config['CACHE_DEFAULT_TIMEOUT'] = 200
-# cache = Cache(app)
+# app = current_app._get_current_object()
+
 
 
 class Signup(Resource):
@@ -112,7 +117,7 @@ class Signup(Resource):
         db.session.commit()
 
         uid = newuser.user_id
-        # app = current_app._get_current_object()
+        app = current_app._get_current_object()
         jt = jwt.encode(
             {"uid": uid, "exp": datetime.utcnow() + timedelta(minutes=30)},
             app.config["SECRET_KEY"],
@@ -183,7 +188,7 @@ class Logout(Resource):
 
 class Profile(Resource):
     @auth_required
-    # @cache.cached(timeout=2)
+    @cache.cached(timeout=2)
     def get(self, userId=None):
         results = []
         if userId:
@@ -202,6 +207,7 @@ class Profile(Resource):
                             "Show": temp_show.name,
                             "Venue": venue.name,
                             "Rate": shows.rated,
+                            "SeatsBooked" : shows.seats
                         }
                         results.append(d)
                     return results
@@ -216,12 +222,14 @@ class Profile(Resource):
 
 class Booking(Resource):
     @auth_required
+    @cache.cached(timeout=2)
     def post(self, userId=None):
         args = create_booking_parser.parse_args()
         print(type(args))
         user_id = args.get("userId", None)
         show_id = args.get("showId", None)
         rating = args.get("rating", None)
+        seats = args.get("seats", None)
         if user_id is None:
             abort(404, message="User id not provided")
         if show_id is None:
@@ -235,6 +243,7 @@ class Booking(Resource):
         new_booking = user_show(
             user_id=user_id,
             show_id=show_id,
+            seats=seats,
             booking_time=datetime().now(),
             rated=rating,
         )
@@ -246,7 +255,7 @@ class Booking(Resource):
 
 class VenueApi(Resource):
     @auth_required
-    # @cache.cached(timeout=2)
+    @cache.cached(timeout=2)
     def get(self, venueId=None):
         if venueId:
             ven = Venue.query.filter(Venue.venue_id == venueId).first()
@@ -351,6 +360,7 @@ class VenueApi(Resource):
 
 class ShowApi(Resource):
     @auth_required
+    @cache.cached(timeout=2)
     def get(self, showId=None, venueId=None):
         if showId:
             show = Show.query.filter(Show.show_id == showId).first()
@@ -359,6 +369,7 @@ class ShowApi(Resource):
                     {
                         "id" : show.showId,
                         "name": show.name,
+                        "dateTime" : show.dateTime,
                         "price": show.price,
                         "available_seats": show.available_seats,
                         "tags": show.tags,
@@ -373,6 +384,7 @@ class ShowApi(Resource):
                     {
                         "id" : show.showId,
                         "name": show.name,
+                        "dateTime" : show.dateTime,
                         "price": show.price,
                         "available_seats": show.available_seats,
                         "tags": show.tags,
@@ -388,6 +400,7 @@ class ShowApi(Resource):
         print(args)
         show_name = args.get("showName", None)
         price = args.get("price", None)
+        dateTime = args.get("dateTime", None)
         seats = args.get("available_seats", None)
         venue = args.get("venue", None)
         if show_name is None:
@@ -407,6 +420,7 @@ class ShowApi(Resource):
             new_show = Show(
                 name=show_name,
                 price=price,
+                dateTime=dateTime,
                 available_seats=seats,
                 rating=args.get("rating", None),
                 tags=args.get("tags", None),
@@ -421,6 +435,7 @@ class ShowApi(Resource):
                     {
                         "id" : new_show.show_id,
                         "name": new_show.name,
+                        "dateTime" : new_show.dateTime,
                         "price": new_show.price,
                         "available_seats": new_show.available_seats,
                         "tags": new_show.tags,
@@ -432,6 +447,7 @@ class ShowApi(Resource):
         print(args)
         show_name = args.get("venue_name", None)
         price = args.get("price", None)
+        timings = args.get("timings", None)
         seats = args.get("available_seats", None)
 
         show = Show.query.filter(Show.show_id == showId).first()
@@ -440,6 +456,8 @@ class ShowApi(Resource):
                 show.name = show_name
             if price:
                 show.price = price
+            if timings:
+                show.timings = timings
             if seats:
                 show.available_seats = seats
 
@@ -449,6 +467,7 @@ class ShowApi(Resource):
                     "id" : show.showId,
                     "name": show.name,
                     "price": show.price,
+                    "dateTime" : show.dateTime,
                     "available_seats": show.available_seats,
                     "tags": show.tags,
                 }
@@ -496,6 +515,7 @@ class GetShowList(Resource):
                     "id" : show.show_id,
                     "name": show.name,
                     "price": show.price,
+                    "dateTime" : show.dateTime,
                     "available_seats": show.available_seats,
                     "tags": show.tags,
                     "ratings" : show.rating
@@ -549,19 +569,31 @@ class ExportVenue(Resource):
         else:
             abort(404,message="Venue id not provided")
             
-# class ShowSummary(Resource):
-#     @auth_required
-#     def get(self, venueId=None):
-#         if venueId:
-#             venue_shows = user_show.query.filter(user_show.venue_id == venueId).all()
-#             for ven in venue_shows:
-#                 records = {}
-#                 show = user_show.query.filter(user_show.show_id == ven.show_id).all()
-#                 for rec in show:
-#                     date = 
-                
-#         else:
-#             abort(404, "Venue Id not provided")
+class ShowSummary(Resource):
+    @auth_required
+    def get(self, venueId=None):
+        if venueId:
+            venue_shows = Show.query.filter(Show.venue_id == venueId).all()
+            if venue_shows:
+                for show in venue_shows:
+                    records = {}
+                    if show.tags:
+                        tags = show.tags.split(',')
+                        if tags:
+                            for tag in tags:
+                                if tag in records.keys():
+                                    records[tag] += 1
+                                else:
+                                    records[tag] = 1
+                        x_axis = records.keys()
+                        y_axis = records.values()
+                        bar = plt.figure()
+                        plt.bar(x_axis, y_axis, width = 0.4)
+                        bar.savefig('src/assets/bargraph'+str(show.show_id)+'.png')
+            else:
+                abort(404, "No show exists in this venue")
+        else:
+            abort(404, "Venue Id not provided")
 
 api.add_resource(GetShowList, "/api/getVenueShow/<int:venueId>")
 api.add_resource(Signup, "/api/signup")
@@ -573,3 +605,4 @@ api.add_resource(GetVenueList, "/api/getVenue")
 api.add_resource(Profile, "/api/userProfile/<int:userId>")
 api.add_resource(GetUserRole, "/api/getUserRole/<int:userId>")
 api.add_resource(ExportVenue,"/api/exportVenue/<int:venueId>")
+api.add_resource(ShowSummary,"/api/summary/<int:venueId>")

@@ -28,10 +28,10 @@ def daily_task():
         user_shows = user_show.query.filter(user_show.user_id == user.user_id).all()
         for bookings in user_shows:
             if parser.parse(bookings.booking_time).date() == datetime.now().date():
-                send = True
+                send = False
                 break
         if send:
-            with open("project/public/mail.html","r") as b:
+            with open("public/send_mail.html","r") as b:
                 html=Template(b.read())
                 send_email(user.email, subject="Daily Reminder", message=html.render(user=user))
 
@@ -54,7 +54,7 @@ def monthly_task():
                     continue
                 d[show.name] = {'count' : 1, 'booking' : [booking.date()]}
 
-        with open("project/public/monthly.html","r") as b:
+        with open("public/send_monthly.html","r") as b:
             html=Template(b.read())
             send_email(user.email, subject="Monthly Progress Report", message=html.render(d=d,user=user))
         
