@@ -66,11 +66,12 @@ def initialize_views(app):
     app = app
     api.init_app(app)
 
+
 app = current_app
 # app.config["CACHE_TYPE"] = "RedisCache"
 # app.config['CACHE_REDIS_HOST'] = "localhost"
 # app.config['CACHE_REDIS_PORT'] = 6379
-# app.config["CACHE_REDIS_URL"] = "redis://localhost:6379"  
+# app.config["CACHE_REDIS_URL"] = "redis://localhost:6379"
 # app.config['CACHE_DEFAULT_TIMEOUT'] = 200
 # cache = Cache(app)
 
@@ -253,7 +254,7 @@ class VenueApi(Resource):
             if ven:
                 return jsonify(
                     {
-                        "id" : ven.venue_id,
+                        "venue_id": ven.venue_id,
                         "name": ven.name,
                         "place": ven.place,
                         "location": ven.location,
@@ -295,14 +296,14 @@ class VenueApi(Resource):
         db.session.commit()
 
         return jsonify(
-                    {
-                        "id" : new_venue.venue_id,
-                        "name": new_venue.name,
-                        "place": new_venue.place,
-                        "location": new_venue.location,
-                        "capacity": new_venue.capacity,
-                    }
-                )
+            {
+                "id": new_venue.venue_id,
+                "name": new_venue.name,
+                "place": new_venue.place,
+                "location": new_venue.location,
+                "capacity": new_venue.capacity,
+            }
+        )
 
     def put(self, venueId=None):
         args = create_venue_parser.parse_args()
@@ -326,7 +327,7 @@ class VenueApi(Resource):
 
             return jsonify(
                 {
-                    "id" : ven.venue_id,
+                    "id": ven.venue_id,
                     "name": ven.name,
                     "place": ven.place,
                     "location": ven.location,
@@ -351,39 +352,26 @@ class VenueApi(Resource):
 
 class ShowApi(Resource):
     @auth_required
-    def get(self, showId=None, venueId=None):
+    def get(self, showId=None):
         if showId:
             show = Show.query.filter(Show.show_id == showId).first()
             if show:
                 return jsonify(
                     {
-                        "id" : show.showId,
+                        "id": show.showId,
                         "name": show.name,
                         "price": show.price,
+                        "rating": show.rating,
                         "available_seats": show.available_seats,
                         "tags": show.tags,
                     }
                 )
             else:
                 return "Show does not exist with this id", 200
-        elif venueId:
-            show = Show.query.filter(Show.venue_id == venueId).first()
-            if show:
-                return jsonify(
-                    {
-                        "id" : show.showId,
-                        "name": show.name,
-                        "price": show.price,
-                        "available_seats": show.available_seats,
-                        "tags": show.tags,
-                    }
-                )
-            else:
-                return "Show does not exist with this venue id", 200
         else:
             abort(404, message="Enter show id or venue id")
 
-    def post(self, showId=None, venueId=None):
+    def post(self, showId=None):
         args = create_show_parser.parse_args()
         print(args)
         show_name = args.get("showName", None)
@@ -418,19 +406,20 @@ class ShowApi(Resource):
             abort(404, message="Venue with this Name does not exists...")
 
         return jsonify(
-                    {
-                        "id" : new_show.show_id,
-                        "name": new_show.name,
-                        "price": new_show.price,
-                        "available_seats": new_show.available_seats,
-                        "tags": new_show.tags,
-                    }
-                )
+            {
+                "id": new_show.show_id,
+                "name": new_show.name,
+                "price": new_show.price,
+                "available_seats": new_show.available_seats,
+                "tags": new_show.tags,
+            }
+        )
 
-    def put(self, showId=None, venueId=None):
+    @auth_required
+    def put(self, showId=None):
         args = create_show_parser.parse_args()
         print(args)
-        show_name = args.get("venue_name", None)
+        show_name = args.get("showName", None)
         price = args.get("price", None)
         seats = args.get("available_seats", None)
 
@@ -446,7 +435,7 @@ class ShowApi(Resource):
             db.session.commit()
             return jsonify(
                 {
-                    "id" : show.showId,
+                    "id": show.show_id,
                     "name": show.name,
                     "price": show.price,
                     "available_seats": show.available_seats,
@@ -456,7 +445,8 @@ class ShowApi(Resource):
         else:
             abort(404, "invalid card")
 
-    def delete(self, showId=None, venueId=None):
+    @auth_required
+    def delete(self, showId=None):
         if showId:
             show = Show.query.filter(Show.show_id == showId).first()
             if show:
@@ -475,48 +465,54 @@ class GetVenueList(Resource):
         venue = Venue.query.all()
         filtered_json = []
         for ven in venue:
-            filtered_json.append({
-                    "id" : ven.venue_id,
+            filtered_json.append(
+                {
+                    "venue_id": ven.venue_id,
                     "name": ven.name,
                     "place": ven.place,
                     "location": ven.location,
                     "capacity": ven.capacity,
-                })
+                }
+            )
         return {"data": filtered_json}
 
 
 class GetShowList(Resource):
     @auth_required
-    def get(self, venueId = None):
+    def get(self, venueId=None):
         if venueId:
             filtered_json = []
             shows = Show.query.filter(Show.venue_id == venueId)
             for show in shows:
-                filtered_json.append({
-                    "id" : show.show_id,
-                    "name": show.name,
-                    "price": show.price,
-                    "available_seats": show.available_seats,
-                    "tags": show.tags,
-                    "ratings" : show.rating
-                })
+                filtered_json.append(
+                    {
+                        "id": show.show_id,
+                        "name": show.name,
+                        "price": show.price,
+                        "rating": show.rating,
+                        "available_seats": show.available_seats,
+                        "tags": show.tags,
+                        "ratings": show.rating,
+                    }
+                )
             return {"data": filtered_json}
         else:
             abort(404, message="Venue Id not provided")
 
+
 class GetUserRole(Resource):
     @auth_required
-    def get(self, userId = None):
+    def get(self, userId=None):
         if userId:
             user = User.query.filter(User.user_id == userId).first()
             return user.role, 200
         else:
-            abort(404, message = "User Id not provided")
+            abort(404, message="User Id not provided")
+
 
 class ExportVenue(Resource):
     @auth_required
-    def get(self,venueId=None):
-        
+    def get(self, venueId=None):
         username = []
         shows = []
         bookings = []
@@ -531,9 +527,13 @@ class ExportVenue(Resource):
                         ratings.append(record.rated)
                     else:
                         ratings.append("Not rated")
-                    
-                    username.append((User.query.filter(User.user_id == record.user_id).first()).name)
-                    shows.append((Show.query.filter(Show.show_id == record.show_id).first()).name)
+
+                    username.append(
+                        (User.query.filter(User.user_id == record.user_id).first()).name
+                    )
+                    shows.append(
+                        (Show.query.filter(Show.show_id == record.show_id).first()).name
+                    )
                     bookings.append(record.booking_time)
 
                 Username = pd.Series(username)
@@ -541,14 +541,22 @@ class ExportVenue(Resource):
                 Bookings = pd.Series(bookings)
                 Ratings = pd.Series(ratings)
 
-                df = pd.DataFrame({'User' : Username, 'Shows' : Shows, 'Booked On' : Bookings, "Ratings" : Ratings})
+                df = pd.DataFrame(
+                    {
+                        "User": Username,
+                        "Shows": Shows,
+                        "Booked On": Bookings,
+                        "Ratings": Ratings,
+                    }
+                )
                 df.to_csv(f"{venue_name}.csv")
             else:
                 abort(404, "no bookings for this venue")
-            
+
         else:
-            abort(404,message="Venue id not provided")
-            
+            abort(404, message="Venue id not provided")
+
+
 # class ShowSummary(Resource):
 #     @auth_required
 #     def get(self, venueId=None):
@@ -558,8 +566,8 @@ class ExportVenue(Resource):
 #                 records = {}
 #                 show = user_show.query.filter(user_show.show_id == ven.show_id).all()
 #                 for rec in show:
-#                     date = 
-                
+#                     date =
+
 #         else:
 #             abort(404, "Venue Id not provided")
 
@@ -568,8 +576,8 @@ api.add_resource(Signup, "/api/signup")
 api.add_resource(Login, "/api/login")
 api.add_resource(Logout, "/api/logout/<int:uid>")
 api.add_resource(VenueApi, "/api/venue/<int:venueId>")
-api.add_resource(ShowApi, "/api/show/<int:showId>/<int:venueId>")
+api.add_resource(ShowApi, "/api/show/<int:showId>")
 api.add_resource(GetVenueList, "/api/getVenue")
 api.add_resource(Profile, "/api/userProfile/<int:userId>")
 api.add_resource(GetUserRole, "/api/getUserRole/<int:userId>")
-api.add_resource(ExportVenue,"/api/exportVenue/<int:venueId>")
+api.add_resource(ExportVenue, "/api/exportVenue/<int:venueId>")

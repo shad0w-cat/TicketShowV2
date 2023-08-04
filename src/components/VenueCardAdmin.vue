@@ -7,12 +7,13 @@
             <h2>{{ venue.name }}</h2>
             <h6>{{ venue.place }}, {{ venue.location }}</h6>
 
+            <button @click="showAddShowModal" class="addButtonV">+</button>
+            <br />
             <div class="shows-container-admin">
                 <ShowCard v-for="show in shows" :key="show.id" :show="show" />
             </div>
-            <button @click="showAddShowModal" class="addButtonV">+</button>
             <br />
-            <br />
+
             <div class="venue-card-admin-footer">
                 <button @click="showEditVenueModal">Edit</button>
                 <button @click="deleteVenue">Delete</button>
@@ -22,7 +23,7 @@
 </template>
 
 <script>
-import ShowCard from './ShowCard.vue';
+import ShowCard from './ShowCardAdmin.vue';
 import AddShowModal from './ShowModal.vue';
 import EditVenueModal from './VenueModal.vue';
 
@@ -71,7 +72,8 @@ export default {
         },
         async editVenue(editVenue) {
             console.log(JSON.stringify(editVenue))
-            const rawResponse = await fetch(`http://127.0.0.1:8081/api/show/${this.venue.venue_id}`, {
+            console.log(this.venue)
+            const rawResponse = await fetch(`http://127.0.0.1:8081/api/venue/${this.venue.venue_id}`, {
                 method: 'PUT',
                 headers: {
                     'Accept': 'application/json',
@@ -113,6 +115,7 @@ export default {
 
 <style>
 .venue-card-admin {
+    height: 100%;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -124,6 +127,7 @@ export default {
 }
 
 .containerV {
+    max-height: 100%;
     margin: 10px;
     border-radius: 10px;
     padding: 20px;
@@ -146,6 +150,11 @@ export default {
     border-radius: 120px;
     background-color: aqua;
     font-size: x-large;
+}
+
+.shows-container-admin {
+    max-height: 100%;
+    overflow: auto;
 }
 
 .venue-card-admin-footer>button {
