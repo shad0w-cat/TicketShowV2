@@ -5,6 +5,7 @@ import AdminDashboard from '../components/AdminDashboard.vue';
 import UserDashboard from '../components/UserDashboard.vue';
 import UserLogin from '../components/UserLogin.vue';
 import { getUserRole } from '@/utils';
+import BookingShows from '@/components/BookingShows.vue';
 
 const UserRoles = {
   Admin: 'admin',
@@ -41,12 +42,15 @@ const router = createRouter({
             console.log(userRole);
 
             if (userRole === UserRoles.Admin) {
-              console.log('HERE');
               return AdminDashboard;
             } else {
               return UserDashboard;
             }
           },
+        },
+        {
+          path: 'booking/:showId', // The dynamic parameter ':showId' will capture the value in the URL
+          component: BookingShows, // Replace 'BookingComponent' with the actual component you want to render for booking.
         },
       ],
     },

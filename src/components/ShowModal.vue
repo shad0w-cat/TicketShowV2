@@ -7,13 +7,15 @@
                     <label for="show_name">Show Name:</label>
                     <input type="text" id="show_name" v-model="newShow.showName" required>
                     <label for="price">Price:</label>
-                    <input type="number" id="price" v-model="newShow.place" min="1" required>
+                    <input type="number" id="price" v-model="newShow.price" min="1" required>
                     <label for="availableSeats">Available Seats:</label>
                     <input type="number" id="availableSeats" v-model="newShow.available_seats" required>
-                    <label for="rating">Rating:</label>
-                    <input type="text" id="rating" v-model="newShow.capacity" required>
+                    <label for="rating">Rating (1-10):</label>
+                    <input type="text" id="rating" v-model="newShow.rating" required>
                     <label for="tags">Tags:</label>
                     <input type="text" id="tags" v-model="newShow.tags" required>
+                    <label for="datetime">Date and Time:</label>
+                    <input type="datetime-local" id="datetime" v-model="newShow.dateTime" required>
                 </div>
                 <div class="form-btns">
                     <button type="submit">{{ title }} Show</button>
@@ -32,10 +34,11 @@ export default {
             return {
                 newShow: {
                     showName: this.editShow.name,
-                    price: this.editShow.place,
+                    price: this.editShow.price,
                     available_seats: this.editShow.available_seats,
                     rating: this.editShow.rating,
                     tags: this.editShow.tags,
+                    dateTime: this.editShow.dateTime,
                 },
             };
         }
@@ -43,10 +46,11 @@ export default {
             return {
                 newShow: {
                     showName: '',
-                    price: '',
+                    price: 0,
                     available_seats: '',
-                    rating: 0,
+                    rating: '',
                     tags: '',
+                    dateTime: '',
                 },
             };
         }
@@ -70,19 +74,21 @@ export default {
             if (this.editShow) {
                 this.newShow = {
                     showName: this.editShow.name,
-                    price: this.editShow.place,
+                    price: this.editShow.price,
                     available_seats: this.editShow.available_seats,
                     rating: this.editShow.rating,
                     tags: this.editShow.tags,
+                    dateTime: this.editShow.dateTime,
                 };
             }
             else {
                 this.newShow = {
                     showName: '',
-                    price: '',
+                    price: 0,
                     available_seats: '',
-                    rating: 0,
+                    rating: '',
                     tags: '',
+                    dateTime: '',
                 };
             }
         },

@@ -28,7 +28,7 @@ export default {
             this.showAddVenue = false;
         },
         async addVenue(newVenue) {
-            const rawResponse = await fetch('http://127.0.0.1:8081/api/venue/1', {
+            const rawResponse = await fetch('http://127.0.0.1:8081/api/venue', {
                 method: 'POST',
                 headers: {
                     'Accept': 'application/json',
@@ -91,5 +91,6 @@ export default {
 .venue-cards-container-admin {
     margin-top: 20px;
     display: flex;
+    height: 92vh;
 }
 </style>
