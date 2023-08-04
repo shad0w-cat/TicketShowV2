@@ -183,6 +183,7 @@ class Logout(Resource):
 
 class Profile(Resource):
     @auth_required
+    # @cache.cached(timeout=2)
     def get(self, userId=None):
         results = []
         if userId:
@@ -240,11 +241,12 @@ class Booking(Resource):
         db.session.add(new_booking)
         db.session.commit()
 
-        return "Booking Successfull", 200
+        return "Booking Successful", 200
 
 
 class VenueApi(Resource):
     @auth_required
+    # @cache.cached(timeout=2)
     def get(self, venueId=None):
         if venueId:
             ven = Venue.query.filter(Venue.venue_id == venueId).first()
@@ -291,7 +293,15 @@ class VenueApi(Resource):
         db.session.add(new_venue)
         db.session.commit()
 
-        return "New venue added", 200
+        return jsonify(
+                    {
+                        "id" : new_venue.venue_id,
+                        "name": new_venue.name,
+                        "place": new_venue.place,
+                        "location": new_venue.location,
+                        "capacity": new_venue.capacity,
+                    }
+                )
 
     def put(self, venueId=None):
         args = create_venue_parser.parse_args()
@@ -403,7 +413,15 @@ class ShowApi(Resource):
         else:
             abort(404, message="Venue with this Name does not exists...")
 
-        return "New Show added", 200
+        return jsonify(
+                    {
+                        "id" : new_show.show_id,
+                        "name": new_show.name,
+                        "price": new_show.price,
+                        "available_seats": new_show.available_seats,
+                        "tags": new_show.tags,
+                    }
+                )
 
     def put(self, showId=None, venueId=None):
         args = create_show_parser.parse_args()
@@ -523,6 +541,20 @@ class ExportVenue(Resource):
             
         else:
             abort(404,message="Venue id not provided")
+            
+# class ShowSummary(Resource):
+#     @auth_required
+#     def get(self, venueId=None):
+#         if venueId:
+#             venue_shows = user_show.query.filter(user_show.venue_id == venueId).all()
+#             for ven in venue_shows:
+#                 records = {}
+#                 show = user_show.query.filter(user_show.show_id == ven.show_id).all()
+#                 for rec in show:
+#                     date = 
+                
+#         else:
+#             abort(404, "Venue Id not provided")
 
 api.add_resource(GetShowList, "/api/getVenueShow/<int:venueId>")
 api.add_resource(Signup, "/api/signup")
