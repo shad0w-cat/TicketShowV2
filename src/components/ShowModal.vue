@@ -14,6 +14,8 @@
                     <input type="text" id="rating" v-model="newShow.rating" required>
                     <label for="tags">Tags:</label>
                     <input type="text" id="tags" v-model="newShow.tags" required>
+                    <label for="datetime">Date and Time:</label>
+                    <input type="datetime-local" id="datetime" v-model="newShow.dateTime" required>
                 </div>
                 <div class="form-btns">
                     <button type="submit">{{ title }} Show</button>
@@ -36,6 +38,7 @@ export default {
                     available_seats: this.editShow.available_seats,
                     rating: this.editShow.rating,
                     tags: this.editShow.tags,
+                    dateTime: this.editShow.dateTime,
                 },
             };
         }
@@ -47,6 +50,7 @@ export default {
                     available_seats: '',
                     rating: '',
                     tags: '',
+                    dateTime: '',
                 },
             };
         }
@@ -74,6 +78,7 @@ export default {
                     available_seats: this.editShow.available_seats,
                     rating: this.editShow.rating,
                     tags: this.editShow.tags,
+                    dateTime: this.editShow.dateTime,
                 };
             }
             else {
@@ -83,6 +88,7 @@ export default {
                     available_seats: '',
                     rating: '',
                     tags: '',
+                    dateTime: '',
                 };
             }
         },

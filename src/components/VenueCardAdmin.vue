@@ -58,7 +58,7 @@ export default {
         },
         async addShow(newShow) {
             newShow.venue = this.venue.name;
-            const rawResponse = await fetch(`http://127.0.0.1:8081/api/show/1/1`, {
+            const rawResponse = await fetch(`http://127.0.0.1:8081/api/show/0`, {
                 method: 'POST',
                 headers: {
                     'Accept': 'application/json',

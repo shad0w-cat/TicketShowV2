@@ -1,37 +1,62 @@
 <template>
-    <div class="show-card">
-        <h3>{{ show.name }}</h3>
-        <p>Seats Available: {{ show.seatsAvailable }}</p>
-        <div v-if="show.seatsAvailable > 0">
-            <!-- Show the "Book Seats" button if seats are available -->
-            <button @click="bookSeats" :disabled="isBookingDisabled">Book Seats</button>
-        </div>
-        <div v-else>
-            <!-- Show "Houseful" message if no seats are available -->
-            <p>Houseful</p>
+    <div class="containerS">
+        <div class="show-card-admin">
+            <h2>{{ show.name }}</h2>
+            <div class="venue-card-admin-footer">
+                <button @click="bookShow">Book Show</button>
+            </div>
         </div>
     </div>
 </template>
 
 <script>
+
+
 export default {
+    data: () => {
+        return {
+        }
+    },
     props: ['show'],
     methods: {
-        bookSeats() {
-            // Implement the logic to book seats for the show
-            // For example, show a dialog, handle seat selection, etc.
-            console.log('Book Seats clicked for show:', this.show.name);
-        },
+        bookShow() {
+            this.$router.push(`/booking/${this.show.id}`)
+        }
     },
-    computed: {
-        isBookingDisabled() {
-            // Determine if the "Book Seats" button should be disabled based on seats availability
-            return this.show.seatsAvailable <= 0;
-        },
-    },
+    mounted() {
+
+    }
 };
 </script>
 
 <style>
-/* Add styles for the show card component */
+.show-card-admin {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    background-color: white;
+    width: max-content;
+    padding: 20px;
+    border-radius: 10px;
+    width: 100%;
+}
+
+.containerS {
+    margin: 10px;
+    border-radius: 10px;
+    padding: 20px;
+    background-color: cornflowerblue;
+}
+
+.show-card-admin button {
+    background: white;
+    border: 1px solid black;
+    padding: 5px;
+    margin: 5px;
+}
+
+.show-card-admin-footer>button {
+    border-radius: 10px;
+}
 </style>
