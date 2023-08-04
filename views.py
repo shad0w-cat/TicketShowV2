@@ -253,6 +253,7 @@ class VenueApi(Resource):
             if ven:
                 return jsonify(
                     {
+                        "id" : ven.venue_id,
                         "name": ven.name,
                         "place": ven.place,
                         "location": ven.location,
@@ -325,6 +326,7 @@ class VenueApi(Resource):
 
             return jsonify(
                 {
+                    "id" : ven.venue_id,
                     "name": ven.name,
                     "place": ven.place,
                     "location": ven.location,
@@ -355,6 +357,7 @@ class ShowApi(Resource):
             if show:
                 return jsonify(
                     {
+                        "id" : show.showId,
                         "name": show.name,
                         "price": show.price,
                         "available_seats": show.available_seats,
@@ -368,6 +371,7 @@ class ShowApi(Resource):
             if show:
                 return jsonify(
                     {
+                        "id" : show.showId,
                         "name": show.name,
                         "price": show.price,
                         "available_seats": show.available_seats,
@@ -442,6 +446,7 @@ class ShowApi(Resource):
             db.session.commit()
             return jsonify(
                 {
+                    "id" : show.showId,
                     "name": show.name,
                     "price": show.price,
                     "available_seats": show.available_seats,
@@ -471,6 +476,7 @@ class GetVenueList(Resource):
         filtered_json = []
         for ven in venue:
             filtered_json.append({
+                    "id" : ven.venue_id,
                     "name": ven.name,
                     "place": ven.place,
                     "location": ven.location,
@@ -487,6 +493,7 @@ class GetShowList(Resource):
             shows = Show.query.filter(Show.venue_id == venueId)
             for show in shows:
                 filtered_json.append({
+                    "id" : show.show_id,
                     "name": show.name,
                     "price": show.price,
                     "available_seats": show.available_seats,
