@@ -13,6 +13,7 @@ import jwt
 import pandas as pd
 from flask_caching import Cache
 import matplotlib.pyplot as plt
+import numpy as np
 
 api = Api()
 cache = Cache()
@@ -241,7 +242,7 @@ class Booking(Resource):
             user_show.user_id == user_id, user_show.show_id == show_id
         ).first()
         if user:
-            abort(404, "This show is already booked by you")
+            abort(404, message = "This show is already booked by you")
         new_booking = user_show(
             user_id=user_id,
             show_id=show_id,
@@ -272,8 +273,7 @@ class Booking(Resource):
 
         return jsonify(
             {
-                "data": total_seats,
-                "showTime" : show.dateTime
+                "data": total_seats
             })
 
 
@@ -621,21 +621,34 @@ class ShowSummary(Resource):
         if venueId:
             venue_shows = Show.query.filter(Show.venue_id == venueId).all()
             if venue_shows:
+                booking_records = {}
+                rating_records = {}
                 for show in venue_shows:
-                    records = {}
-                    if show.tags:
-                        tags = show.tags.split(",")
-                        if tags:
-                            for tag in tags:
-                                if tag in records.keys():
-                                    records[tag] += 1
-                                else:
-                                    records[tag] = 1
-                        x_axis = records.keys()
-                        y_axis = records.values()
-                        bar = plt.figure()
-                        plt.bar(x_axis, y_axis, width=0.4)
-                        bar.savefig("src/assets/bargraph" + str(show.show_id) + ".png")
+                    
+                    booked = user_show.query.filter(user_show.show_id == show.show_id).all()
+                    booking_records[show.name] = len(booked)
+                    
+                    ratings = 0
+                    total_rating = 0
+                    for records in booked:
+                        if (records.rated != None):
+                            if (records.rated != ""):
+                                total_rating += 1
+                                ratings += int(records.rated)
+                    rating_records[show.name] = np.round((ratings/total_rating),2)
+                x_axis_1 = booking_records.keys()
+                y_axis_1  = booking_records.values()
+                
+                bar = plt.figure()
+                plt.bar(x_axis_1, y_axis_1, width = 0.4)
+                bar.savefig("src/assets/bargraph/booking" + str(venueId) + ".png")
+                
+                x_axis_2 = rating_records.keys()
+                y_axis_2 = rating_records.values()
+                
+                bar = plt.figure()
+                plt.bar(x_axis_2, y_axis_2, width = 0.4)
+                bar.savefig("src/assets/bargraph/rating" + str(venueId) + ".png")
             else:
                 abort(404, "No show exists in this venue")
         else:
