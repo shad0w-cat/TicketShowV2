@@ -69,15 +69,15 @@ create_booking_parser.add_argument("seats")
 def initialize_views(app):
     app = app
     api.init_app(app)
-    app.config["CACHE_TYPE"] = "RedisCache"
-    app.config['CACHE_REDIS_HOST'] = "localhost"
-    app.config['CACHE_REDIS_PORT'] = 6379
-    app.config["CACHE_REDIS_URL"] = "redis://localhost:6379"  
-    app.config['CACHE_DEFAULT_TIMEOUT'] = 200
-    cache.init_app(app)
+    # app.config["CACHE_TYPE"] = "RedisCache"
+    # app.config['CACHE_REDIS_HOST'] = "localhost"
+    # app.config['CACHE_REDIS_PORT'] = 6379
+    # app.config["CACHE_REDIS_URL"] = "redis://localhost:6379"
+    # app.config['CACHE_DEFAULT_TIMEOUT'] = 200
+    # cache.init_app(app)
+
 
 # app = current_app._get_current_object()
-
 
 
 class Signup(Resource):
@@ -188,7 +188,7 @@ class Logout(Resource):
 
 class Profile(Resource):
     @auth_required
-    @cache.cached(timeout=2)
+    # @cache.cached(timeout=2)
     def get(self, userId=None):
         results = []
         if userId:
@@ -207,7 +207,7 @@ class Profile(Resource):
                             "Show": temp_show.name,
                             "Venue": venue.name,
                             "Rate": shows.rated,
-                            "SeatsBooked" : shows.seats
+                            "SeatsBooked": shows.seats,
                         }
                         results.append(d)
                     return results
@@ -222,8 +222,8 @@ class Profile(Resource):
 
 class Booking(Resource):
     @auth_required
-    @cache.cached(timeout=2)
-    def post(self, userId=None):
+    # @cache.cached(timeout=2)
+    def post(self):
         args = create_booking_parser.parse_args()
         print(type(args))
         user_id = args.get("userId", None)
@@ -244,7 +244,7 @@ class Booking(Resource):
             user_id=user_id,
             show_id=show_id,
             seats=seats,
-            booking_time=datetime().now(),
+            booking_time=datetime.now(),
             rated=rating,
         )
         db.session.add(new_booking)
@@ -252,10 +252,22 @@ class Booking(Resource):
 
         return "Booking Successful", 200
 
+    def get(self, showId=None):
+        if showId is None:
+            abort(404, message="Show id not provided")
+
+        bookings = user_show.query.filter(user_show.show_id == showId).all()
+
+        total_seats = 0
+        for booking in bookings:
+            total_seats += booking.seats
+
+        return {"data": total_seats}, 200
+
 
 class VenueApi(Resource):
     @auth_required
-    @cache.cached(timeout=2)
+    # @cache.cached(timeout=2)
     def get(self, venueId=None):
         if venueId:
             ven = Venue.query.filter(Venue.venue_id == venueId).first()
@@ -275,7 +287,7 @@ class VenueApi(Resource):
         else:
             abort(404, message="Enter venue id")
 
-    def post(self, venueId=None):
+    def post(self):
         args = create_venue_parser.parse_args()
         print(args)
         venue_name = args.get("venueName", None)
@@ -360,16 +372,16 @@ class VenueApi(Resource):
 
 class ShowApi(Resource):
     @auth_required
-    @cache.cached(timeout=2)
+    # @cache.cached(timeout=2)
     def get(self, showId=None, venueId=None):
         if showId:
             show = Show.query.filter(Show.show_id == showId).first()
             if show:
                 return jsonify(
                     {
-                        "id": show.showId,
+                        "id": show.show_id,
                         "name": show.name,
-                        "dateTime" : show.dateTime,
+                        "dateTime": show.dateTime,
                         "price": show.price,
                         "rating": show.rating,
                         "available_seats": show.available_seats,
@@ -383,9 +395,9 @@ class ShowApi(Resource):
             if show:
                 return jsonify(
                     {
-                        "id" : show.showId,
+                        "id": show.showId,
                         "name": show.name,
-                        "dateTime" : show.dateTime,
+                        "dateTime": show.dateTime,
                         "price": show.price,
                         "available_seats": show.available_seats,
                         "tags": show.tags,
@@ -433,15 +445,15 @@ class ShowApi(Resource):
             abort(404, message="Venue with this Name does not exists...")
 
         return jsonify(
-                    {
-                        "id" : new_show.show_id,
-                        "name": new_show.name,
-                        "dateTime" : new_show.dateTime,
-                        "price": new_show.price,
-                        "available_seats": new_show.available_seats,
-                        "tags": new_show.tags,
-                    }
-                )
+            {
+                "id": new_show.show_id,
+                "name": new_show.name,
+                "dateTime": new_show.dateTime,
+                "price": new_show.price,
+                "available_seats": new_show.available_seats,
+                "tags": new_show.tags,
+            }
+        )
 
     @auth_required
     def put(self, showId=None):
@@ -469,7 +481,7 @@ class ShowApi(Resource):
                     "id": show.show_id,
                     "name": show.name,
                     "price": show.price,
-                    "dateTime" : show.dateTime,
+                    "dateTime": show.dateTime,
                     "available_seats": show.available_seats,
                     "tags": show.tags,
                 }
@@ -516,15 +528,17 @@ class GetShowList(Resource):
             filtered_json = []
             shows = Show.query.filter(Show.venue_id == venueId)
             for show in shows:
-                filtered_json.append({
-                    "id" : show.show_id,
-                    "name": show.name,
-                    "price": show.price,
-                    "dateTime" : show.dateTime,
-                    "available_seats": show.available_seats,
-                    "tags": show.tags,
-                    "ratings" : show.rating
-                })
+                filtered_json.append(
+                    {
+                        "id": show.show_id,
+                        "name": show.name,
+                        "price": show.price,
+                        "dateTime": show.dateTime,
+                        "available_seats": show.available_seats,
+                        "tags": show.tags,
+                        "ratings": show.rating,
+                    }
+                )
             return {"data": filtered_json}
         else:
             abort(404, message="Venue Id not provided")
@@ -584,8 +598,9 @@ class ExportVenue(Resource):
                 abort(404, "no bookings for this venue")
 
         else:
-            abort(404,message="Venue id not provided")
-            
+            abort(404, message="Venue id not provided")
+
+
 class ShowSummary(Resource):
     @auth_required
     def get(self, venueId=None):
@@ -595,7 +610,7 @@ class ShowSummary(Resource):
                 for show in venue_shows:
                     records = {}
                     if show.tags:
-                        tags = show.tags.split(',')
+                        tags = show.tags.split(",")
                         if tags:
                             for tag in tags:
                                 if tag in records.keys():
@@ -605,21 +620,23 @@ class ShowSummary(Resource):
                         x_axis = records.keys()
                         y_axis = records.values()
                         bar = plt.figure()
-                        plt.bar(x_axis, y_axis, width = 0.4)
-                        bar.savefig('src/assets/bargraph'+str(show.show_id)+'.png')
+                        plt.bar(x_axis, y_axis, width=0.4)
+                        bar.savefig("src/assets/bargraph" + str(show.show_id) + ".png")
             else:
                 abort(404, "No show exists in this venue")
         else:
             abort(404, "Venue Id not provided")
 
+
 api.add_resource(GetShowList, "/api/getVenueShow/<int:venueId>")
+api.add_resource(Booking, "/api/booking/<int:showId>", "/api/booking")
 api.add_resource(Signup, "/api/signup")
 api.add_resource(Login, "/api/login")
 api.add_resource(Logout, "/api/logout/<int:uid>")
-api.add_resource(VenueApi, "/api/venue/<int:venueId>")
+api.add_resource(VenueApi, "/api/venue/<int:venueId>", "/api/venue")
 api.add_resource(ShowApi, "/api/show/<int:showId>")
 api.add_resource(GetVenueList, "/api/getVenue")
 api.add_resource(Profile, "/api/userProfile/<int:userId>")
 api.add_resource(GetUserRole, "/api/getUserRole/<int:userId>")
-api.add_resource(ExportVenue,"/api/exportVenue/<int:venueId>")
-api.add_resource(ShowSummary,"/api/summary/<int:venueId>")
+api.add_resource(ExportVenue, "/api/exportVenue/<int:venueId>")
+api.add_resource(ShowSummary, "/api/summary/<int:venueId>")

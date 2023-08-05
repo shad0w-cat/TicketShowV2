@@ -6,6 +6,7 @@ import UserDashboard from '../components/UserDashboard.vue';
 import UserLogin from '../components/UserLogin.vue';
 import { getUserRole } from '@/utils';
 import BookingShows from '@/components/BookingShows.vue';
+import UserProfile from '@/components/UserProfile.vue';
 
 const UserRoles = {
   Admin: 'admin',
@@ -49,8 +50,12 @@ const router = createRouter({
           },
         },
         {
-          path: 'booking/:showId', // The dynamic parameter ':showId' will capture the value in the URL
-          component: BookingShows, // Replace 'BookingComponent' with the actual component you want to render for booking.
+          path: 'booking/:showId',
+          component: BookingShows,
+        },
+        {
+          path: 'profile',
+          component: UserProfile,
         },
       ],
     },

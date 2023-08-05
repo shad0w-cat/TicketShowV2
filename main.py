@@ -4,8 +4,7 @@ from flask_sqlalchemy import SQLAlchemy
 from models import db
 from flask_cors import CORS
 from views import initialize_views
-from celery_worker import celery,ContextTask
-
+from celery_worker import celery, ContextTask
 
 
 app = Flask(__name__)
@@ -20,18 +19,18 @@ with app.app_context():
     db.create_all()
 initialize_views(app)
 
-celery=celery
+# celery = celery
 
-CELERY_BROKER_URL="redis://127.0.0.1:6379/1"
-CELERY_RESULT_BACKEND="redis://127.0.0.1:6379/2"
+# CELERY_BROKER_URL = "redis://127.0.0.1:6379/1"
+# CELERY_RESULT_BACKEND = "redis://127.0.0.1:6379/2"
 
-celery.conf.update(
-    broker_url="redis://127.0.0.1:6379/1",
-    result_backend="redis://127.0.0.1:6379/2",
-    timezone="Asia/Kolkata"
-)
+# celery.conf.update(
+#     broker_url="redis://127.0.0.1:6379/1",
+#     result_backend="redis://127.0.0.1:6379/2",
+#     timezone="Asia/Kolkata",
+# )
 
-celery.Task=ContextTask
+# celery.Task = ContextTask
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=8081, debug=True)

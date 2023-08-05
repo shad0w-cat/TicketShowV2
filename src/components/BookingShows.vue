@@ -1,18 +1,15 @@
 <template>
     <div class="show-modal-content">
-        <h3>Booking - {{ show.showName }}</h3>
+        <h3>Booking - {{ show.name }} @ {{ new Date(show.dateTime) }}</h3>
+        <h5>available Seats = {{ availableSeats }}</h5>
         <form @submit.prevent="bookMyShow">
             <div class="form-group">
-                <label for="price">Price:</label>
-                <input type="number" id="price" v-model="newShow.price" required disabled>
                 <label for="availableSeats">No of seats</label>
-                <input type="number" id="availableSeats" v-model="newShow.available_seats" required>
-                <label for="rating">Rating (1-10):</label>
-                <input type="text" id="rating" v-model="newShow.rating" required>
-                <label for="tags">Tags:</label>
-                <input type="text" id="tags" v-model="newShow.tags" required>
-                <label for="datetime">Date and Time:</label>
-                <input type="datetime-local" id="datetime" v-model="newShow.dateTime" required>
+                <input type="number" id="availableSeats" v-model="booking.seats" min="1" :max="availableSeats" required>
+                <label for="price">Price:</label>
+                <input type="number" id="price" v-model="show.price" required disabled>
+                <label for="total">Rating (1-10):</label>
+                <input type="text" id="total" :value="bookingTotal" required disabled>
             </div>
             <div class="form-btns">
                 <button type="submit">Book Show</button>
@@ -27,16 +24,31 @@
 export default {
     data() {
         return {
+            availableSeats: 0,
             show: '',
             booking: {
-                userId: '',
-                showId: '',
+                userId: localStorage.getItem('userId'),
+                showId: this.$route.params.showId,
                 rating: '',
                 seats: 0,
             }
         }
     },
-    methods: {},
+    methods: {
+        async bookMyShow() {
+            const rawResponse = await fetch('http://127.0.0.1:8081/api/booking', {
+                method: 'POST',
+                headers: {
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json',
+                    'access-token': localStorage.getItem("token")
+                },
+                body: JSON.stringify(this.booking)
+            });
+            // const content = await rawResponse.json();
+            console.log(rawResponse)
+        }
+    },
     async mounted() {
         try {
             const getShow = await fetch(`http://127.0.0.1:8081/api/show/${this.$route.params.showId}`,
@@ -47,12 +59,28 @@ export default {
                 });
 
             const showInfo = await getShow.json();
-            this.shows = Object.values(showInfo).pop();
+            this.show = showInfo;
+            console.log(this.show)
 
+            const seatsResponse = await fetch(`http://127.0.0.1:8081/api/booking/${this.$route.params.showId}`,
+                {
+                    headers: {
+                        'access-token': localStorage.getItem("token")
+                    }
+                });
+
+            const availableSeats = await seatsResponse.json();
+            this.availableSeats = showInfo.available_seats - availableSeats.data;
+            console.log(availableSeats)
         } catch (error) {
             console.error('Error fetching venues:', error);
         }
-    }
+    },
+    computed: {
+        bookingTotal() {
+            return this.booking.seats * this.show.price;
+        },
+    },
 }
 </script>
 
