@@ -205,10 +205,10 @@ class Profile(Resource):
                             Venue.venue_id == temp_show.venue_id
                         ).first()
                         d = {
-                            "bookingId" : shows.id,
+                            "bookingId": shows.id,
                             "Show": temp_show.name,
                             "Venue": venue.name,
-                            "ShowDateTime" : temp_show.dateTime,
+                            "ShowDateTime": temp_show.dateTime,
                             "Rate": shows.rated,
                             "SeatsBooked": shows.seats,
                         }
@@ -242,7 +242,7 @@ class Booking(Resource):
             user_show.user_id == user_id, user_show.show_id == show_id
         ).first()
         if user:
-            abort(404, message = "This show is already booked by you")
+            abort(404, message="This show is already booked by you")
         new_booking = user_show(
             user_id=user_id,
             show_id=show_id,
@@ -254,10 +254,7 @@ class Booking(Resource):
         db.session.commit()
 
         return jsonify(
-            {
-                "bookingId" : new_booking.id,
-                "bookingTime" : new_booking.booking_time
-            }
+            {"bookingId": new_booking.id, "bookingTime": new_booking.booking_time}
         )
 
     def get(self, showId=None):
@@ -271,10 +268,7 @@ class Booking(Resource):
         for booking in bookings:
             total_seats += booking.seats
 
-        return jsonify(
-            {
-                "data": total_seats
-            })
+        return jsonify({"data": total_seats})
 
 
 class VenueApi(Resource):
@@ -420,7 +414,7 @@ class ShowApi(Resource):
         else:
             abort(404, message="Enter show id or venue id")
 
-    def post(self, showId=None):
+    def post(self):
         args = create_show_parser.parse_args()
         print(args)
         show_name = args.get("showName", None)
@@ -624,52 +618,51 @@ class ShowSummary(Resource):
                 booking_records = {}
                 rating_records = {}
                 for show in venue_shows:
-                    
-                    booked = user_show.query.filter(user_show.show_id == show.show_id).all()
+                    booked = user_show.query.filter(
+                        user_show.show_id == show.show_id
+                    ).all()
                     booking_records[show.name] = len(booked)
-                    
+
                     ratings = 0
                     total_rating = 0
                     for records in booked:
-                        if (records.rated != None):
-                            if (records.rated != ""):
+                        if records.rated != None:
+                            if records.rated != "":
                                 total_rating += 1
                                 ratings += int(records.rated)
-                    rating_records[show.name] = np.round((ratings/total_rating),2)
+                    rating_records[show.name] = np.round((ratings / total_rating), 2)
                 x_axis_1 = booking_records.keys()
-                y_axis_1  = booking_records.values()
-                
+                y_axis_1 = booking_records.values()
+
                 bar = plt.figure()
-                plt.bar(x_axis_1, y_axis_1, width = 0.4)
+                plt.bar(x_axis_1, y_axis_1, width=0.4)
                 bar.savefig("src/assets/bargraph/booking" + str(venueId) + ".png")
-                
+
                 x_axis_2 = rating_records.keys()
                 y_axis_2 = rating_records.values()
-                
+
                 bar = plt.figure()
-                plt.bar(x_axis_2, y_axis_2, width = 0.4)
+                plt.bar(x_axis_2, y_axis_2, width=0.4)
                 bar.savefig("src/assets/bargraph/rating" + str(venueId) + ".png")
             else:
                 abort(404, "No show exists in this venue")
         else:
             abort(404, "Venue Id not provided")
 
+
 class UserRating(Resource):
     def put(self, bookingId=None, rating=None):
         if bookingId:
             if rating:
-                booking = user_show.query.filter(
-                    user_show.id == bookingId
-                ).first()
-                
+                booking = user_show.query.filter(user_show.id == bookingId).first()
+
                 booking.rated = rating
                 db.session.commit()
                 return "Show rated successfully", 200
             else:
-                abort(404, 'Rating for the show not provided')
+                abort(404, "Rating for the show not provided")
         else:
             abort(404, "Booking Id not provided")
-                
 
 
 api.add_resource(GetShowList, "/api/getVenueShow/<int:venueId>")
@@ -678,10 +671,10 @@ api.add_resource(Signup, "/api/signup")
 api.add_resource(Login, "/api/login")
 api.add_resource(Logout, "/api/logout/<int:uid>")
 api.add_resource(VenueApi, "/api/venue/<int:venueId>", "/api/venue")
-api.add_resource(ShowApi, "/api/show/<int:showId>")
+api.add_resource(ShowApi, "/api/show/<int:showId>", "/api/show")
 api.add_resource(GetVenueList, "/api/getVenue")
 api.add_resource(Profile, "/api/userProfile/<int:userId>")
 api.add_resource(GetUserRole, "/api/getUserRole/<int:userId>")
 api.add_resource(ExportVenue, "/api/exportVenue/<int:venueId>")
 api.add_resource(ShowSummary, "/api/summary/<int:venueId>")
-api.add_resource(UserRating,"/api/rating/<int:bookingId>/<string:rating>")
+api.add_resource(UserRating, "/api/rating/<int:bookingId>/<string:rating>")

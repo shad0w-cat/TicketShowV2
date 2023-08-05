@@ -1,4 +1,5 @@
 <template>
+    <DeleteConfirm v-if="deleteConfirmationVisible" @onDelete="deleteVenue" @hideDelete="deleteConfirmation" />
     <EditVenueModal :showVenueModal="showEditVenue" @editVenue="editVenue" @closeModal="hideEditVenueModal" :title="'Edit'"
         :editVenue="venue" />
     <AddShowModal :showShowModal="showAddShow" @addShow="addShow" @closeModal="hideAddShowModal" :title="'Add New'" />
@@ -16,13 +17,14 @@
 
             <div class="venue-card-admin-footer">
                 <button @click="showEditVenueModal">Edit</button>
-                <button @click="deleteVenue">Delete</button>
+                <button @click="() => deleteConfirmation(true)">Delete</button>
             </div>
         </div>
     </div>
 </template>
 
 <script>
+import DeleteConfirm from './DeleteConfirm.vue';
 import ShowCard from './ShowCardAdmin.vue';
 import AddShowModal from './ShowModal.vue';
 import EditVenueModal from './VenueModal.vue';
@@ -34,6 +36,7 @@ export default {
             shows: [],
             showEditVenue: false,
             showAddShow: false,
+            deleteConfirmationVisible: false,
         }
     },
     props: ['venue'],
@@ -42,6 +45,7 @@ export default {
         // eslint-disable-next-line vue/no-unused-components
         AddShowModal,
         EditVenueModal,
+        DeleteConfirm
     },
     methods: {
         showEditVenueModal() {
@@ -56,9 +60,12 @@ export default {
         hideAddShowModal() {
             this.showAddShow = false;
         },
+        deleteConfirmation(e) {
+            this.deleteConfirmationVisible = e;
+        },
         async addShow(newShow) {
             newShow.venue = this.venue.name;
-            const rawResponse = await fetch(`http://127.0.0.1:8081/api/show/0`, {
+            const rawResponse = await fetch(`http://127.0.0.1:8081/api/show`, {
                 method: 'POST',
                 headers: {
                     'Accept': 'application/json',
@@ -93,6 +100,7 @@ export default {
                 }
             })
             console.log('Delete venue:', rawResponse);
+            this.deleteConfirmation(false);
         },
     },
     async mounted() {
