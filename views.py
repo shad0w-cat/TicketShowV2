@@ -206,6 +206,7 @@ class Profile(Resource):
                         d = {
                             "Show": temp_show.name,
                             "Venue": venue.name,
+                            "ShowDateTime" : temp_show.dateTime
                             "Rate": shows.rated,
                             "SeatsBooked": shows.seats,
                         }
@@ -250,19 +251,29 @@ class Booking(Resource):
         db.session.add(new_booking)
         db.session.commit()
 
-        return "Booking Successful", 200
+        return jsonify(
+            {
+                "bookingId" : new_booking.id,
+                "bookingTime" : new_booking.booking_time
+            }
+        )
 
     def get(self, showId=None):
         if showId is None:
             abort(404, message="Show id not provided")
 
         bookings = user_show.query.filter(user_show.show_id == showId).all()
+        show = Show.query.filter(Show.show_id == showId).first()
 
         total_seats = 0
         for booking in bookings:
             total_seats += booking.seats
 
-        return {"data": total_seats}, 200
+        return jsonify(
+            {
+                "data": total_seats,
+                "showTime" : show.dateTime
+            })
 
 
 class VenueApi(Resource):
@@ -427,6 +438,8 @@ class ShowApi(Resource):
 
         if venue is None:
             abort(404, message="Provide a venue for the show")
+        if dateTime is None:
+            abort(404, message="Provide a time for the show")
 
         ven = Venue.query.filter(Venue.name == venue).first()
         if ven:
@@ -627,6 +640,23 @@ class ShowSummary(Resource):
         else:
             abort(404, "Venue Id not provided")
 
+class UserRating(Resource):
+    def put(self, bookingId=None, rating=None):
+        if bookingId:
+            if rating:
+                booking = user_show.query.filter(
+                    user_show.id == bookingId
+                ).first()
+                
+                booking.rated = rating
+                db.session.commit()
+                return "Show rated successfully", 200
+            else:
+                abort(404, 'Rating for the show not provided')
+        else:
+            abort(404, "Booking Id not provided")
+                
+
 
 api.add_resource(GetShowList, "/api/getVenueShow/<int:venueId>")
 api.add_resource(Booking, "/api/booking/<int:showId>", "/api/booking")
@@ -640,3 +670,4 @@ api.add_resource(Profile, "/api/userProfile/<int:userId>")
 api.add_resource(GetUserRole, "/api/getUserRole/<int:userId>")
 api.add_resource(ExportVenue, "/api/exportVenue/<int:venueId>")
 api.add_resource(ShowSummary, "/api/summary/<int:venueId>")
+api.add_resource(UserRating,"/api/rating/<int:bookingId>/<string:rating>")
