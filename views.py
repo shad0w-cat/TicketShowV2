@@ -204,9 +204,10 @@ class Profile(Resource):
                             Venue.venue_id == temp_show.venue_id
                         ).first()
                         d = {
+                            "bookingId" : shows.id,
                             "Show": temp_show.name,
                             "Venue": venue.name,
-                            "ShowDateTime" : temp_show.dateTime
+                            "ShowDateTime" : temp_show.dateTime,
                             "Rate": shows.rated,
                             "SeatsBooked": shows.seats,
                         }
