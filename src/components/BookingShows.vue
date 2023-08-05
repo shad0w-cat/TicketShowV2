@@ -1,6 +1,7 @@
 <template>
+    <AlertComponent v-if="alert.show" :message="alert.message" :success="alert.success" />
     <div class="show-modal-content">
-        <h3>Booking - {{ show.name }} @ {{ new Date(show.dateTime) }}</h3>
+        <h3>Booking - {{ show.name }} @ {{ new Date(show.dateTime).toLocaleString() }}</h3>
         <h5>available Seats = {{ availableSeats }}</h5>
         <form @submit.prevent="bookMyShow">
             <div class="form-group">
@@ -14,13 +15,15 @@
             <div class="form-btns">
                 <button type="submit">Book Show</button>
                 &nbsp;
-                <button @click.prevent="hideModal">Cancel</button>
+                <button @click.prevent="this.$router.push('/')">Cancel</button>
             </div>
         </form>
     </div>
 </template>
 
 <script>
+import AlertComponent from './AlertComponent.vue';
+
 export default {
     data() {
         return {
@@ -31,22 +34,41 @@ export default {
                 showId: this.$route.params.showId,
                 rating: '',
                 seats: 0,
-            }
+            },
+            alert: {
+                show: false,
+                success: false,
+                message: '',
+            },
         }
     },
     methods: {
         async bookMyShow() {
-            const rawResponse = await fetch('http://127.0.0.1:8081/api/booking', {
-                method: 'POST',
-                headers: {
-                    'Accept': 'application/json',
-                    'Content-Type': 'application/json',
-                    'access-token': localStorage.getItem("token")
-                },
-                body: JSON.stringify(this.booking)
-            });
-            // const content = await rawResponse.json();
-            console.log(rawResponse)
+            try {
+                const rawResponse = await fetch('http://127.0.0.1:8081/api/booking', {
+                    method: 'POST',
+                    headers: {
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json',
+                        'access-token': localStorage.getItem("token")
+                    },
+                    body: JSON.stringify(this.booking)
+                });
+                if (rawResponse.status === 200) {
+                    setTimeout(() => this.$router.push("/profile"), 5000);
+
+
+                }
+                else {
+                    let data = await rawResponse.json();
+                    this.alert.message = data.message;
+                    this.alert.show = true;
+                    this.alert.success = false;
+                    console.log(this.alert)
+                }
+            } catch (e) {
+                console.log(e)
+            }
         }
     },
     async mounted() {
@@ -60,7 +82,6 @@ export default {
 
             const showInfo = await getShow.json();
             this.show = showInfo;
-            console.log(this.show)
 
             const seatsResponse = await fetch(`http://127.0.0.1:8081/api/booking/${this.$route.params.showId}`,
                 {
@@ -71,9 +92,8 @@ export default {
 
             const availableSeats = await seatsResponse.json();
             this.availableSeats = showInfo.available_seats - availableSeats.data;
-            console.log(availableSeats)
         } catch (error) {
-            console.error('Error fetching venues:', error);
+            console.error(error);
         }
     },
     computed: {
@@ -81,6 +101,8 @@ export default {
             return this.booking.seats * this.show.price;
         },
     },
+    components: { AlertComponent }
+
 }
 </script>
 

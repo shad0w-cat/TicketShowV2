@@ -7,6 +7,7 @@ import UserLogin from '../components/UserLogin.vue';
 import { getUserRole } from '@/utils';
 import BookingShows from '@/components/BookingShows.vue';
 import UserProfile from '@/components/UserProfile.vue';
+import SummaryPage from '@/components/SummaryPage.vue';
 
 const UserRoles = {
   Admin: 'admin',
@@ -56,6 +57,13 @@ const router = createRouter({
         {
           path: 'profile',
           component: UserProfile,
+        },
+        {
+          path: 'summary/:venueId',
+          component: SummaryPage,
+          meta: {
+            requiredRoles: [UserRoles.Admin],
+          },
         },
       ],
     },

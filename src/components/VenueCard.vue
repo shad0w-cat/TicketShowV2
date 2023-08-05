@@ -58,8 +58,6 @@ export default {
             this.$emit('onUpdate');
         },
         async editVenue(editVenue) {
-            console.log(JSON.stringify(editVenue))
-            console.log(this.venue)
             const rawResponse = await fetch(`http://127.0.0.1:8081/api/venue/${this.venue.venue_id}`, {
                 method: 'PUT',
                 headers: {

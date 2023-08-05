@@ -1,31 +1,54 @@
 <template>
+    <AlertComponent v-if="alert.show" :message="alert.message" :success="alert.success" />
     <div class="containerS">
         <div class="show-card-admin">
             <h2>{{ show.name }}</h2>
             <div class="venue-card-admin-footer">
-                <button @click="bookShow">Book Show</button>
+                <button v-if="seats > 0" @click="bookShow">Book Show</button>
+                <div v-else>Houseful 🎊</div>
             </div>
         </div>
     </div>
 </template>
 
 <script>
-
+import AlertComponent from './AlertComponent.vue';
 
 export default {
     data: () => {
         return {
-        }
+            seats: 0,
+            alert: {
+                show: false,
+                success: false,
+                message: '',
+            },
+        };
     },
     props: ['show'],
     methods: {
         bookShow() {
-            this.$router.push(`/booking/${this.show.id}`)
+            this.$router.push(`/booking/${this.show.id}`);
         }
     },
-    mounted() {
-
-    }
+    async mounted() {
+        console.log(this.show);
+        const seatsResponse = await fetch(`http://127.0.0.1:8081/api/booking/${this.show.id}`, {
+            headers: {
+                'access-token': localStorage.getItem("token")
+            }
+        });
+        if (seatsResponse.status === 200) {
+            const availableSeats = await seatsResponse.json();
+            this.seats = this.show.available_seats - availableSeats.data;
+        }
+        else {
+            this.alert.show = true;
+            this.alert.success = false;
+            this.alert.message = await seatsResponse.json().message;
+        }
+    },
+    components: { AlertComponent }
 };
 </script>
 
