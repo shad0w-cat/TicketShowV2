@@ -10,29 +10,36 @@ export default {
     data: () => {
         return {
             // venueId: this.$route.params.venueId,
-            fetched : false,
-            images : {
-                booking : "",
-                rating : ''
+            fetched: false,
+            images: {
+                booking: "",
+                rating: ''
             }
         }
     },
     methods: {
-        async getSummary(){
+        async getSummary() {
             try {
-                await fetch(`http://127.0.0.1:8081/api/summary/${this.$route.params.venueId}`,
+                const apiResponse = await fetch(`http://127.0.0.1:8081/api/summary/${this.$route.params.venueId}`,
                     {
                         headers: {
                             'access-token': localStorage.getItem("token")
                         }
                     });
-                this.images.booking = require(`../assets/booking${this.$route.params.venueId}.png`)
-                this.images.rating = require(`../assets/rating${this.$route.params.venueId}.png`)
-                this.fetched = true
+
+                if (apiResponse.status === 200) {
+                    this.images.booking = require(`../assets/booking${this.$route.params.venueId}.png`)
+                    this.images.rating = require(`../assets/rating${this.$route.params.venueId}.png`)
+
+                    this.fetched = true
+                }
+                else {
+                    alert(apiResponse.data['message'])
+                }
             } catch (error) {
                 console.error('Error fetching summary stats:', error);
             }
-        
+
         }
     },
     mounted() {
@@ -50,6 +57,7 @@ export default {
     display: grid;
     grid-template-columns: 50% 50%;
 }
+
 .container>img {
     width: 110%;
 }
