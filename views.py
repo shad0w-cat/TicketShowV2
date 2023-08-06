@@ -12,6 +12,8 @@ from jwt_auth import auth_required
 import jwt
 import pandas as pd
 from flask_caching import Cache
+import matplotlib
+matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 import numpy as np
 
@@ -517,6 +519,20 @@ class GetVenueList(Resource):
         venue = Venue.query.all()
         filtered_json = []
         for ven in venue:
+            shows = Show.query.filter(Show.venue_id == ven.venue_id)
+            venueShows = []
+            for show in shows:
+                venueShows.append(
+                    {
+                        "id": show.show_id,
+                        "name": show.name,
+                        "price": show.price,
+                        "dateTime": show.dateTime,
+                        "available_seats": show.available_seats,
+                        "tags": show.tags,
+                        "ratings": show.rating,
+                    }
+                )
             filtered_json.append(
                 {
                     "venue_id": ven.venue_id,
@@ -524,6 +540,7 @@ class GetVenueList(Resource):
                     "place": ven.place,
                     "location": ven.location,
                     "capacity": ven.capacity,
+                    "shows" : venueShows
                 }
             )
         return {"data": filtered_json}
@@ -635,15 +652,15 @@ class ShowSummary(Resource):
                 y_axis_1 = booking_records.values()
 
                 bar = plt.figure()
-                plt.bar(x_axis_1, y_axis_1, width=0.4)
-                bar.savefig("src/assets/bargraph/booking" + str(venueId) + ".png")
+                plt.bar(x_axis_1, y_axis_1)
+                bar.savefig("./src/assets/booking" + str(venueId) + ".png")
 
                 x_axis_2 = rating_records.keys()
                 y_axis_2 = rating_records.values()
 
                 bar = plt.figure()
-                plt.bar(x_axis_2, y_axis_2, width=0.4)
-                bar.savefig("src/assets/bargraph/rating" + str(venueId) + ".png")
+                plt.bar(x_axis_2, y_axis_2)
+                bar.savefig("./src/assets/rating" + str(venueId) + ".png")
             else:
                 abort(404, "No show exists in this venue")
         else:

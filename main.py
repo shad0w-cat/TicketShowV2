@@ -1,7 +1,7 @@
 from typing import ByteString
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
-from models import db
+from models import db, User
 from flask_cors import CORS
 from views import initialize_views
 from celery_worker import celery, ContextTask
@@ -17,6 +17,11 @@ app.secret_key = "shushhh"
 db.init_app(app)
 with app.app_context():
     db.create_all()
+    admin = User.query.filter_by(role = "admin").first()
+    if not admin:
+        admin = User(name="SIMRAN", username="simran", email="simran@gmail.com", password="2345", role="admin")
+        db.session.add(admin)
+        db.session.commit()
 initialize_views(app)
 
 # celery = celery
