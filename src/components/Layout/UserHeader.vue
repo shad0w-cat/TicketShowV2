@@ -3,7 +3,7 @@
         <div class="user-info">
             <h4>Hello, {{ username }}</h4>
             <div class="button">
-                <button @click="goToHome">Hpme</button>
+                <button @click="goToHome">Home</button>
                 <button @click="goToProfile">Profile</button>
                 |
                 <button @click="logout">Logout</button>
