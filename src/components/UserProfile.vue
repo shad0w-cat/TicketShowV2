@@ -40,6 +40,7 @@ export default {
 
                 const userRatingToShow = await userRatingToShowRaw.json();
                 console.log(userRatingToShow);
+                this.$router.go(0);
 
             } catch (error) {
                 console.error('Error fetching venues:', error);

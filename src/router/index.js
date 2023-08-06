@@ -8,6 +8,7 @@ import { getUserRole } from '@/utils';
 import BookingShows from '@/components/BookingShows.vue';
 import UserProfile from '@/components/UserProfile.vue';
 import SummaryPage from '@/components/SummaryPage.vue';
+import NotFoundPage from '@/components/NotFoundPage.vue';
 
 const UserRoles = {
   Admin: 'admin',
@@ -17,6 +18,15 @@ const UserRoles = {
 const router = createRouter({
   history: createWebHistory(),
   routes: [
+    {
+      path: '/404',
+      name: 'NotFound',
+      component: NotFoundPage,
+    },
+    {
+      path: '/:catchAll(.*)',
+      redirect: '/404',
+    },
     {
       path: '/login',
       name: 'User Login',
