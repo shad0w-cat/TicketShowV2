@@ -9,6 +9,7 @@ import BookingShows from '@/components/BookingShows.vue';
 import UserProfile from '@/components/UserProfile.vue';
 import SummaryPage from '@/components/SummaryPage.vue';
 import NotFoundPage from '@/components/NotFoundPage.vue';
+import UnauthorizedAccessPage from '@/components/UnauthorizedAccessPage.vue';
 
 const UserRoles = {
   Admin: 'admin',
@@ -22,6 +23,11 @@ const router = createRouter({
       path: '/404',
       name: 'NotFound',
       component: NotFoundPage,
+    },
+    {
+      path: '/unauthorized',
+      name: 'NotFound',
+      component: UnauthorizedAccessPage,
     },
     {
       path: '/:catchAll(.*)',
@@ -90,9 +96,7 @@ router.beforeEach(async (to, from, next) => {
       const userRole = await getUserRole();
       console.log(userRole);
       if (!userRole || !requiredRoles.includes(userRole)) {
-        console.log('HERE ysrad sdafgsd');
-
-        next('/login');
+        next('/unauthorized');
       } else {
         next();
       }

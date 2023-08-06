@@ -29,7 +29,7 @@
                     <input type="password" id="adminPassword" v-model="userRegistrationForm.password" class="form-control">
                 </div>
                 <br />
-                <button type="submit" class="btn btn-primary">Login</button>
+                <button type="submit" class="btn btn-primary">Sign Up</button>
             </form>
         </div>
     </div>
@@ -62,10 +62,6 @@ export default {
 
                 const response = await rawResponse.json()
                 console.log('API response:', response);
-
-                localStorage.setItem('username', response.username)
-                localStorage.setItem('userId', response.userId)
-                localStorage.setItem('token', response.token)
                 this.onSuccessfulRegistration();
 
             } catch (error) {
@@ -75,7 +71,7 @@ export default {
         },
         onSuccessfulRegistration() {
             // this.$router.push('/');
-            window.location.href = '/';
+            window.location.href = '/login';
         }
     }
 };

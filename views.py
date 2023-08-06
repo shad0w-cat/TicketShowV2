@@ -218,7 +218,7 @@ class Profile(Resource):
                         results.append(d)
                     return results
                 else:
-                    return {"msg": "No booking history. Book a show now", "user": user}
+                    return {"msg": "No booking history. Book a show now"}, 404
             else:
                 abort(404, "User with this id does not exist")
 
@@ -683,9 +683,9 @@ class ShowSummary(Resource):
 
                 bar = plt.figure()
                 plt.bar(x_axis_1, y_axis_1)
-                plt.title('Show Bookings')
-                plt.xlabel('Shows')
-                plt.ylabel('Bookings Done')
+                plt.title("Show Bookings")
+                plt.xlabel("Shows")
+                plt.ylabel("Bookings Done")
                 bar.savefig("./src/assets/booking" + str(venueId) + ".png")
 
                 x_axis_2 = rating_records.keys()
@@ -693,9 +693,9 @@ class ShowSummary(Resource):
 
                 bar = plt.figure()
                 plt.bar(x_axis_2, y_axis_2)
-                plt.title('Show Ratings')
-                plt.xlabel('Shows')
-                plt.ylabel('Average Ratings')
+                plt.title("Show Ratings")
+                plt.xlabel("Shows")
+                plt.ylabel("Average Ratings")
                 bar.savefig("./src/assets/rating" + str(venueId) + ".png")
             else:
                 abort(404, "No show exists in this venue")

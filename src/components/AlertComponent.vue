@@ -1,8 +1,8 @@
 <template>
-    <div v-if="success" class="alert alert-success alert-dismissible" role="alert">
+    <div v-if="success" class="alert custom-alert alert-success alert-dismissible" role="alert">
         {{ message }}
     </div>
-    <div v-else class="alert alert-danger alert-dismissible" role="alert">
+    <div v-else class="alert custom-alert alert-danger alert-dismissible" role="alert">
         {{ message }}
     </div>
 </template>
@@ -22,7 +22,7 @@ export default {
 </script>
 
 <style>
-.alert {
+.custom-alert {
     position: absolute !important;
     top: 10px !important;
     right: 10px !important;

@@ -1,7 +1,7 @@
 <template>
     <div>
-        <h1>404 Error</h1>
-        <p>No such page exist.</p>
+        <h1>401 Error</h1>
+        <p>Unauthorized Access</p>
     </div>
 </template>
 

@@ -58,14 +58,16 @@ export default {
                     body: JSON.stringify(this.booking)
                 });
                 if (rawResponse.status === 200) {
-                    setTimeout(() => this.$router.push("/profile"), 5000);
+                    this.alert.message = "Show booked. Redirecting......";
+                    this.alert.show = true;
+                    this.alert.success = true;
+                    setTimeout(() => this.$router.push("/profile"), 2000);
                 }
                 else {
                     let data = await rawResponse.json();
                     this.alert.message = data.message;
                     this.alert.show = true;
                     this.alert.success = false;
-                    console.log(this.alert)
                 }
             } catch (e) {
                 console.log(e)
