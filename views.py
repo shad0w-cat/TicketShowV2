@@ -218,7 +218,7 @@ class Profile(Resource):
                         results.append(d)
                     return results
                 else:
-                    return {"msg": "No booking history. Book a show now", "user": user}
+                    return {"msg": "No booking history. Book a show now"}
             else:
                 abort(404, "User with this id does not exist")
 
