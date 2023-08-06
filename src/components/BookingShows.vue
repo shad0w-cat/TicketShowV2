@@ -1,5 +1,5 @@
 <template>
-    <AlertComponent v-if="alert.show" :message="alert.message" :success="alert.success" />
+    <AlertComponent v-if="alert.show" :message="alert.message" :success="alert.success" @hide="hideAlert" />
     <div class="show-modal-content">
         <h3>Booking - {{ show.name }} @ {{ new Date(show.dateTime).toLocaleString() }}</h3>
         <h5>available Seats = {{ availableSeats }}</h5>
@@ -43,6 +43,9 @@ export default {
         }
     },
     methods: {
+        hideAlert() {
+            this.alert.show = false;
+        },
         async bookMyShow() {
             try {
                 const rawResponse = await fetch('http://127.0.0.1:8081/api/booking', {
@@ -56,8 +59,6 @@ export default {
                 });
                 if (rawResponse.status === 200) {
                     setTimeout(() => this.$router.push("/profile"), 5000);
-
-
                 }
                 else {
                     let data = await rawResponse.json();
