@@ -95,7 +95,9 @@ router.beforeEach(async (to, from, next) => {
       const requiredRoles = to.meta.requiredRoles;
       const userRole = await getUserRole();
       console.log(userRole);
-      if (!userRole || !requiredRoles.includes(userRole)) {
+      if (!userRole) {
+        next('/login');
+      } else if (!requiredRoles.includes(userRole)) {
         next('/unauthorized');
       } else {
         next();
