@@ -620,7 +620,7 @@ class ExportVenue(Resource):
                         "Ratings": Ratings,
                     }
                 )
-                df.to_csv(f"{venue_name}.csv")
+                df.to_excel(f"{venue_name}.xlsx")
             else:
                 abort(404, "no bookings for this venue")
 
