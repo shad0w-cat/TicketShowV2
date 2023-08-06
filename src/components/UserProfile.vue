@@ -7,9 +7,9 @@
                 <h4> Seats Booked: {{ booking.SeatsBooked }} </h4>
                 <h4> Time : {{ new Date(booking.ShowDateTime).toLocaleString() }} </h4>
                 <h4 v-if="booking.Rate">{{ booking.Rate }} ⭐</h4>
-                <div v-else class="search-container">
+                <div v-else class="rate-container">
                     <input type="number" min="1" max="5" v-model="rating" placeholder="Rate (1-5)">
-                    <button @click="() => rateShow()"> Rate Show </button>
+                    <button @click="() => rateShow(booking.bookingId)"> Rate Show </button>
                 </div>
             </div>
         </div>
@@ -85,7 +85,7 @@ export default {
 .bookedShowCard {
     display: grid;
     place-items: center;
-    grid-template-columns: 40% 20% 30% 10%;
+    grid-template-columns: 35% 15% 25% 20%;
     align-items: center;
     justify-content: space-between;
     padding: 2%;
@@ -94,7 +94,35 @@ export default {
     border: 1px solid salmon;
 }
 
-.bookedShowCard>h2 {
-    align-self: flex-start;
+.rate-container {
+    display: flex;
+    align-items: center;
+    max-width: 400px;
+    /* margin: 20px auto; */
+    border: 2px solid #ccc;
+    /* padding: 10px; */
+    border-radius: 5px;
+}
+
+.rate-container input[type="number"] {
+    flex: 1;
+    padding: 8px;
+    font-size: 16px;
+    border: none;
+    outline: none;
+}
+
+.rate-container button {
+    padding: 8px 16px;
+    background-color: #007bff;
+    color: #fff;
+    border: none;
+    border-radius: 0px 5px 5px 0px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.rate-container button:hover {
+    background-color: #0056b3;
 }
 </style>
