@@ -638,19 +638,26 @@ class ShowSummary(Resource):
                     booked = user_show.query.filter(
                         user_show.show_id == show.show_id
                     ).all()
-                    booking_records[show.name] = len(booked)
+                    
+                    if booked:
+                        booking_records[show.name] = len(booked)
 
-                    ratings = 0
-                    total_rating = 0
-                    for records in booked:
-                        if records.rated != None:
-                            if records.rated != "":
-                                total_rating += 1
-                                ratings += int(records.rated)
-                    if total_rating != 0:
-                        rating_records[show.name] = np.round((ratings / total_rating), 2)
+                        ratings = 0
+                        total_rating = 0
+                        for records in booked:
+                            if records.rated != None:
+                                if records.rated != "":
+                                    total_rating += 1
+                                    ratings += int(records.rated)
+                        if total_rating != 0:
+                            rating_records[show.name] = np.round((ratings / total_rating), 2)
+                        else:
+                            rating_records[show.name] = 0 
                     else:
-                        rating_records[show.name] = 0 
+                        continue
+                
+                if booking_records == {}:
+                    abort(404, "No bookings exists for the shows")
                 x_axis_1 = booking_records.keys()
                 y_axis_1 = booking_records.values()
 
