@@ -647,7 +647,10 @@ class ShowSummary(Resource):
                             if records.rated != "":
                                 total_rating += 1
                                 ratings += int(records.rated)
-                    rating_records[show.name] = np.round((ratings / total_rating), 2)
+                    if total_rating != 0:
+                        rating_records[show.name] = np.round((ratings / total_rating), 2)
+                    else:
+                        rating_records[show.name] = 0 
                 x_axis_1 = booking_records.keys()
                 y_axis_1 = booking_records.values()
 

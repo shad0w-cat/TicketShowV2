@@ -6,5 +6,6 @@ celery = Celery("Application Jobs")
 
 class ContextTask(celery.Task):
     def __call__(self, *args, **kwargs):
+        print("in celery call")
         return self.run(*args,*kwargs)
 

@@ -13,7 +13,8 @@ from dateutil import parser
 
 @celery.on_after_finalize.connect
 def setup_periodic_tasks(sender, **kwargs):
-    sender.add_periodic_task(crontab(hour=18, minute=00), daily_task.s(), name='daily')
+    print("in celery")
+    sender.add_periodic_task(crontab(hour=23, minute=26), daily_task.s(), name='daily')
     sender.add_periodic_task(crontab(0, 0, day_of_month='1'), monthly_task.s(), name='monthly')
 
 # @celery.task()
@@ -33,7 +34,9 @@ def daily_task():
         if send:
             with open("public/send_mail.html","r") as b:
                 html=Template(b.read())
+                print("sent yayayayaya")
                 send_email(user.email, subject="Daily Reminder", message=html.render(user=user))
+                
 
 @celery.task()
 def monthly_task():
