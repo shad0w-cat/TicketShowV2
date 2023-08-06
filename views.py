@@ -588,7 +588,7 @@ class ExportVenue(Resource):
         ratings = []
 
         if venueId:
-            shows = Show.query.filter(user_show.venue_id == venueId).all()
+            shows = Show.query.filter(Show.venue_id == venueId).all()
             venue_name = Venue.query.filter(Venue.venue_id == venueId).first().name
             if shows:
                 for show in shows:
