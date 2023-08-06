@@ -73,6 +73,8 @@ export default {
 .bookedShowsContainer {
     margin: 20px;
     display: flex;
+    flex-direction: column;
+    gap: 20px;
     /* background-color: blue; */
 }
 
