@@ -37,15 +37,15 @@ export default {
                 let venuesList = Object.values(venuesData).pop();
 
 
-                // const filteredVenues = venuesList.reduce((result, venue) => {
-                //     const upcomingShows = venue.shows.filter((show) => new Date(show.dateTime) > new Date());
-                //     if (upcomingShows.length > 0) {
-                //         result.push({ ...venue, shows: upcomingShows });
-                //     }
-                //     return result;
-                // }, []);
+                const filteredVenues = venuesList.reduce((result, venue) => {
+                    const upcomingShows = venue.shows.filter((show) => new Date(show.dateTime) > new Date());
+                    if (upcomingShows.length > 0) {
+                        result.push({ ...venue, shows: upcomingShows });
+                    }
+                    return result;
+                }, []);
 
-                this.venues = venuesList
+                this.venues = filteredVenues
             } catch (error) {
                 console.error('Error fetching venues:', error);
             }
