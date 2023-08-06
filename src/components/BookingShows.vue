@@ -9,7 +9,7 @@
                 <input type="number" id="availableSeats" v-model="booking.seats" min="1" :max="availableSeats" required>
                 <label for="price">Price:</label>
                 <input type="number" id="price" v-model="show.price" required disabled>
-                <label for="total">Rating (1-10):</label>
+                <label for="total">Total Price:</label>
                 <input type="text" id="total" :value="bookingTotal" required disabled>
             </div>
             <div class="form-btns">

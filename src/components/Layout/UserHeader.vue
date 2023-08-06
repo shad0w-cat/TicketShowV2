@@ -3,7 +3,9 @@
         <div class="user-info">
             <h4>Hello, {{ username }}</h4>
             <div class="button">
+                <button @click="goToHome">Hpme</button>
                 <button @click="goToProfile">Profile</button>
+                |
                 <button @click="logout">Logout</button>
             </div>
         </div>
@@ -19,6 +21,9 @@ export default {
         },
         goToProfile() {
             this.$router.push('/profile');
+        },
+        goToHome() {
+            this.$router.push('/');
         },
     },
 };
