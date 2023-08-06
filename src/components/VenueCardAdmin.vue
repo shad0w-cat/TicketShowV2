@@ -11,13 +11,15 @@
             <button @click="showAddShowModal" class="addButtonV">+</button>
             <br />
             <div class="shows-container-admin">
-                <ShowCard v-for="show in shows" :key="show.id" :show="show" />
+                <ShowCard v-for="show in venue.shows" :key="show.id" :show="show" />
             </div>
             <br />
 
             <div class="venue-card-admin-footer">
                 <button @click="showEditVenueModal">Edit</button>
                 <button @click="() => deleteConfirmation(true)">Delete</button>
+                <button @click="() => deleteConfirmation(true)">Export</button>
+                <button @click="redirectSummary">Summary</button>
             </div>
         </div>
     </div>
@@ -102,21 +104,11 @@ export default {
             console.log('Delete venue:', rawResponse);
             this.deleteConfirmation(false);
         },
+        redirectSummary() {
+            this.$router.push(`/summary/${this.venue.venue_id}`);
+        }
     },
     async mounted() {
-        try {
-            const getVenueShow = await fetch(`http://127.0.0.1:8081/api/getVenueShow/${this.venue.venue_id}`,
-                {
-                    headers: {
-                        'access-token': localStorage.getItem("token")
-                    }
-                }
-            );
-            const showsData = await getVenueShow.json();
-            this.shows = Object.values(showsData).pop();
-        } catch (error) {
-            console.error('Error fetching venues:', error);
-        }
     }
 };
 </script>

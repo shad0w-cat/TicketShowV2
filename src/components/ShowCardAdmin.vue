@@ -1,4 +1,5 @@
 <template>
+    <DeleteConfirm v-if="deleteConfirmationVisible" @onDelete="deleteVenue" @hideDelete="deleteConfirmation" />
     <EditShowModal :showShowModal="showEditShow" @editShow="editShow" @closeModal="hideEditShowModal" :title="'Edit'"
         :editShow="show" />
     <div class="containerS">
@@ -14,20 +15,26 @@
 
 <script>
 import EditShowModal from './ShowModal.vue';
+import DeleteConfirm from './DeleteConfirm.vue';
 
 
 export default {
     data: () => {
         return {
             showEditShow: false,
+            deleteConfirmationVisible: false,
         }
     },
     props: ['show'],
     components: {
+        DeleteConfirm,
         // eslint-disable-next-line vue/no-unused-components
         EditShowModal,
     },
     methods: {
+        deleteConfirmation(e) {
+            this.deleteConfirmationVisible = e;
+        },
         showEditShowModal() {
             this.showEditShow = true;
         },
@@ -56,6 +63,8 @@ export default {
                 },
             })
             console.log('Delete venue:', rawResponse);
+            this.deleteConfirmation(false);
+
         },
     },
 };

@@ -24,6 +24,4 @@ export default {
 };
 </script>
 
-<style>
-/* Styles for the user header */
-</style>
+<style></style>
