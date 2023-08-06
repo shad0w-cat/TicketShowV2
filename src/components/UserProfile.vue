@@ -7,7 +7,10 @@
                 <h4> Seats Booked: {{ booking.SeatsBooked }} </h4>
                 <h4> Time : {{ new Date(booking.ShowDateTime).toLocaleString() }} </h4>
                 <h4 v-if="booking.Rate">{{ booking.Rate }} ⭐</h4>
-                <button v-else @click="() => rateShow(booking.bookingId)"> Rate Show </button>
+                <div v-else class="search-container">
+                    <input type="number" min="1" max="5" v-model="rating" placeholder="Rate (1-5)">
+                    <button @click="() => rateShow()"> Rate Show </button>
+                </div>
             </div>
         </div>
     </div>
@@ -21,12 +24,13 @@ export default {
     data() {
         return {
             userBookedShows: [],
+            rating: 0,
         };
     },
     methods: {
         async rateShow(bookingId) {
             try {
-                const userRatingToShowRaw = await fetch(`http://127.0.0.1:8081/api/rating/${bookingId}/5`,
+                const userRatingToShowRaw = await fetch(`http://127.0.0.1:8081/api/rating/${bookingId}/${this.rating}`,
                     {
                         method: "PUT",
                         headers: {
