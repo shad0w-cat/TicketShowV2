@@ -588,22 +588,24 @@ class ExportVenue(Resource):
         ratings = []
 
         if venueId:
-            venues = user_show.query.filter(user_show.venue_id == venueId).all()
+            shows = Show.query.filter(user_show.venue_id == venueId).all()
             venue_name = Venue.query.filter(Venue.venue_id == venueId).first().name
-            if venues:
-                for record in venues:
-                    if record.rated != "":
-                        ratings.append(record.rated)
-                    else:
-                        ratings.append("Not rated")
+            if shows:
+                for show in shows:
+                    show_bookings = user_show.query.filter(user_show.show_id == show.show_id).all()
+                    for record in show_bookings:
+                        if record.rated != "":
+                            ratings.append(record.rated)
+                        else:
+                            ratings.append("Not rated")
 
-                    username.append(
-                        (User.query.filter(User.user_id == record.user_id).first()).name
-                    )
-                    shows.append(
-                        (Show.query.filter(Show.show_id == record.show_id).first()).name
-                    )
-                    bookings.append(record.booking_time)
+                        username.append(
+                            (User.query.filter(User.user_id == record.user_id).first()).name
+                        )
+                        shows.append(
+                            (Show.query.filter(Show.show_id == record.show_id).first()).name
+                        )
+                        bookings.append(record.booking_time)
 
                 Username = pd.Series(username)
                 Shows = pd.Series(shows)
