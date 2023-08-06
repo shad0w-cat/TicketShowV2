@@ -26,16 +26,16 @@ initialize_views(app)
 
 celery = celery
 
-# CELERY_BROKER_URL = "redis://127.0.0.1:6379/1"
-# CELERY_RESULT_BACKEND = "redis://127.0.0.1:6379/2"
+CELERY_BROKER_URL = "redis://127.0.0.1:6379/1"
+CELERY_RESULT_BACKEND = "redis://127.0.0.1:6379/2"
 
-# celery.conf.update(
-#     broker_url="redis://127.0.0.1:6379/1",
-#     result_backend="redis://127.0.0.1:6379/2",
-#     timezone="Asia/Kolkata",
-# )
+celery.conf.update(
+    broker_url="redis://127.0.0.1:6379/1",
+    result_backend="redis://127.0.0.1:6379/2",
+    timezone="Asia/Kolkata",
+)
 
-# celery.Task = ContextTask
+celery.Task = ContextTask
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=8081, debug=True)

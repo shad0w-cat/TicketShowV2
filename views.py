@@ -73,16 +73,24 @@ create_booking_parser.add_argument("seats")
 def initialize_views(app):
     app = app
     api.init_app(app)
-    # app.config["CACHE_TYPE"] = "RedisCache"
-    # app.config['CACHE_REDIS_HOST'] = "localhost"
-    # app.config['CACHE_REDIS_PORT'] = 6379
-    # app.config["CACHE_REDIS_URL"] = "redis://localhost:6379"
-    # app.config['CACHE_DEFAULT_TIMEOUT'] = 200
-    # cache.init_app(app)
+    app.config["CACHE_TYPE"] = "RedisCache"
+    app.config['CACHE_REDIS_HOST'] = "localhost"
+    app.config['CACHE_REDIS_PORT'] = 6379
+    app.config["CACHE_REDIS_URL"] = "redis://localhost:6379"
+    app.config['CACHE_DEFAULT_TIMEOUT'] = 200
+    cache.init_app(app)
 
 
 # app = current_app._get_current_object()
 
+
+class index(Resource):
+    cache.cached(timeout=10)
+    def post(self):
+        
+        print("chal gya chal gya")
+    
+api.add_resource(index,"/api/aao/idhar")
 
 class Signup(Resource):
     def post(self):

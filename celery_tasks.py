@@ -14,12 +14,12 @@ from dateutil import parser
 @celery.on_after_finalize.connect
 def setup_periodic_tasks(sender, **kwargs):
     print("in celery")
-    sender.add_periodic_task(crontab(hour=23, minute=26), daily_task.s(), name='daily')
+    sender.add_periodic_task(crontab(hour=2, minute=56), daily_task.s(), name='daily')
     sender.add_periodic_task(crontab(0, 0, day_of_month='1'), monthly_task.s(), name='monthly')
 
-# @celery.task()
-# def just_say_hello():
-#     print("WUHAHAHAHA")
+@celery.task()
+def test_func():
+    print("yaha aa gya")
 
 @celery.task()
 def daily_task():
