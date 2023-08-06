@@ -34,7 +34,18 @@ export default {
                 });
 
                 const venuesData = await venuesResponse.json();
-                this.venues = Object.values(venuesData).pop();
+                let venuesList = Object.values(venuesData).pop();
+
+
+                const filteredVenues = venuesList.reduce((result, venue) => {
+                    const upcomingShows = venue.shows.filter((show) => new Date(show.dateTime) > new Date());
+                    if (upcomingShows.length > 0) {
+                        result.push({ ...venue, shows: upcomingShows });
+                    }
+                    return result;
+                }, []);
+
+                this.venues = filteredVenues
             } catch (error) {
                 console.error('Error fetching venues:', error);
             }
@@ -42,14 +53,19 @@ export default {
     },
     computed: {
         filteredVenues() {
-            return this.venues.filter((venue) => {
-                return (
-                    venue.name.toLowerCase().includes(this.searchText.toLowerCase()) ||
-                    venue.shows.some((show) =>
-                        show.name.toLowerCase().includes(this.searchText.toLowerCase())
-                    )
-                );
-            });
+            return this.venues.reduce((result, venue) => {
+                const filteredShows = venue.shows.filter((show) => show.name.toLowerCase().includes(this.searchText.toLowerCase()));
+                const found = venue.name.toLowerCase().includes(this.searchText.toLowerCase()) ||
+                    venue.place.toLowerCase().includes(this.searchText.toLowerCase()) ||
+                    venue.location.toLowerCase().includes(this.searchText.toLowerCase())
+                if (found) {
+                    result.push({ ...venue });
+                }
+                else if (filteredShows.length > 0) {
+                    result.push({ ...venue, shows: filteredShows });
+                }
+                return result;
+            }, []);
         },
     },
     mounted() {

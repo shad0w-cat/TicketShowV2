@@ -8,8 +8,12 @@ export async function getUserRole() {
         },
       }
     );
-    const userRole = await rawResponse.json();
-    return userRole;
+    if (rawResponse.status === 200) {
+      const userRole = await rawResponse.json();
+      return userRole;
+    } else {
+      return null;
+    }
   } catch (error) {
     console.error('New API call error:', error);
     return null;

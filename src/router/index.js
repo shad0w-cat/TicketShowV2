@@ -8,6 +8,8 @@ import { getUserRole } from '@/utils';
 import BookingShows from '@/components/BookingShows.vue';
 import UserProfile from '@/components/UserProfile.vue';
 import SummaryPage from '@/components/SummaryPage.vue';
+import NotFoundPage from '@/components/NotFoundPage.vue';
+import UnauthorizedAccessPage from '@/components/UnauthorizedAccessPage.vue';
 
 const UserRoles = {
   Admin: 'admin',
@@ -17,6 +19,20 @@ const UserRoles = {
 const router = createRouter({
   history: createWebHistory(),
   routes: [
+    {
+      path: '/404',
+      name: 'NotFound',
+      component: NotFoundPage,
+    },
+    {
+      path: '/unauthorized',
+      name: 'NotFound',
+      component: UnauthorizedAccessPage,
+    },
+    {
+      path: '/:catchAll(.*)',
+      redirect: '/404',
+    },
     {
       path: '/login',
       name: 'User Login',
@@ -79,10 +95,10 @@ router.beforeEach(async (to, from, next) => {
       const requiredRoles = to.meta.requiredRoles;
       const userRole = await getUserRole();
       console.log(userRole);
-      if (!userRole || !requiredRoles.includes(userRole)) {
-        console.log('HERE ysrad sdafgsd');
-
+      if (!userRole) {
         next('/login');
+      } else if (!requiredRoles.includes(userRole)) {
+        next('/unauthorized');
       } else {
         next();
       }

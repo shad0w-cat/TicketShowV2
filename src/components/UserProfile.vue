@@ -1,7 +1,12 @@
 <template>
     <div class="user-profile">
         <div class="bookedShowsContainer">
-            <div v-for="booking, index in userBookedShows" :key="index" class="bookedShowCard">
+            <div v-if="!bookingFound">
+                <div class="alert alert-danger" role="alert">
+                    {{ errorMessage }}
+                </div>
+            </div>
+            <div else v-for="booking, index in userBookedShows" :key="index" class="bookedShowCard">
                 <h2>{{ booking.Venue }} -
                     {{ booking.Show }}</h2>
                 <h4> Seats Booked: {{ booking.SeatsBooked }} </h4>
@@ -25,6 +30,8 @@ export default {
         return {
             userBookedShows: [],
             rating: 0,
+            bookingFound: false,
+            errorMessage: ''
         };
     },
     methods: {
@@ -40,6 +47,7 @@ export default {
 
                 const userRatingToShow = await userRatingToShowRaw.json();
                 console.log(userRatingToShow);
+                this.$router.go(0);
 
             } catch (error) {
                 console.error('Error fetching venues:', error);
@@ -55,8 +63,16 @@ export default {
                         }
                     });
 
-                const bookedShows = await bookedShowsRaw.json();
-                this.userBookedShows = bookedShows
+                if (bookedShowsRaw.status === 200) {
+                    const bookedShows = await bookedShowsRaw.json();
+                    this.userBookedShows = bookedShows;
+                    this.bookingFound = true;
+                }
+                else {
+                    this.bookingFound = false;
+                    const error = await bookedShowsRaw.json();
+                    this.errorMessage = error.msg
+                }
 
             } catch (error) {
                 console.error('Error fetching venues:', error);

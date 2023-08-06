@@ -35,7 +35,6 @@ export default {
         }
     },
     async mounted() {
-        console.log(this.show);
         const seatsResponse = await fetch(`http://127.0.0.1:8081/api/booking/${this.show.id}`, {
             headers: {
                 'access-token': localStorage.getItem("token")

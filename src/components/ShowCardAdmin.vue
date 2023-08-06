@@ -1,5 +1,5 @@
 <template>
-    <DeleteConfirm v-if="deleteConfirmationVisible" @onDelete="deleteVenue" @hideDelete="deleteConfirmation" />
+    <DeleteConfirm v-if="deleteConfirmationVisible" @onDelete="deleteShow" @hideDelete="deleteConfirmation" />
     <EditShowModal :showShowModal="showEditShow" @editShow="editShow" @closeModal="hideEditShowModal" :title="'Edit'"
         :editShow="show" />
     <div class="containerS">
@@ -7,7 +7,7 @@
             <h2>{{ show.name }}</h2>
             <div class="venue-card-admin-footer">
                 <button @click="showEditShowModal">Edit</button>
-                <button @click="deleteShow">Delete</button>
+                <button @click="() => deleteConfirmation(true)">Delete</button>
             </div>
         </div>
     </div>
