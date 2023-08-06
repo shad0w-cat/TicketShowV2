@@ -1,4 +1,5 @@
 <template>
+    <AlertComponent v-if="alert.show" :message="alert.message" :success="alert.success" @hide="hideAlert" />
     <DeleteConfirm v-if="deleteConfirmationVisible" @onDelete="deleteVenue" @hideDelete="deleteConfirmation" />
     <EditVenueModal :showVenueModal="showEditVenue" @editVenue="editVenue" @closeModal="hideEditVenueModal" :title="'Edit'"
         :editVenue="venue" />
@@ -18,7 +19,7 @@
             <div class="venue-card-admin-footer">
                 <button @click="showEditVenueModal">Edit</button>
                 <button @click="() => deleteConfirmation(true)">Delete</button>
-                <button @click="() => deleteConfirmation(true)">Export</button>
+                <button @click="exportVenue">Export</button>
                 <button @click="redirectSummary">Summary</button>
             </div>
         </div>
@@ -30,6 +31,7 @@ import DeleteConfirm from './DeleteConfirm.vue';
 import ShowCard from './ShowCardAdmin.vue';
 import AddShowModal from './ShowModal.vue';
 import EditVenueModal from './VenueModal.vue';
+import AlertComponent from './AlertComponent.vue';
 
 
 export default {
@@ -39,6 +41,11 @@ export default {
             showEditVenue: false,
             showAddShow: false,
             deleteConfirmationVisible: false,
+            alert: {
+                show: false,
+                success: false,
+                message: '',
+            },
         }
     },
     props: ['venue'],
@@ -47,7 +54,8 @@ export default {
         // eslint-disable-next-line vue/no-unused-components
         AddShowModal,
         EditVenueModal,
-        DeleteConfirm
+        DeleteConfirm,
+        AlertComponent,
     },
     methods: {
         showEditVenueModal() {
@@ -64,6 +72,9 @@ export default {
         },
         deleteConfirmation(e) {
             this.deleteConfirmationVisible = e;
+        },
+        hideAlert() {
+            this.alert.show = false;
         },
         async addShow(newShow) {
             newShow.venue = this.venue.name;
@@ -106,6 +117,29 @@ export default {
         },
         redirectSummary() {
             this.$router.push(`/summary/${this.venue.venue_id}`);
+        },
+        async exportVenue() {
+            try {
+                const rawResponse = await fetch(`http://127.0.0.1:8081/api/exportVenue/${this.venue.venue_id}`, {
+                    method: 'GET',
+                    headers: {
+                        'access-token': localStorage.getItem("token")
+                    },
+                });
+                if (rawResponse.status === 200) {
+                    this.alert.message = "Exported Successfully.";
+                    this.alert.show = true;
+                    this.alert.success = true;
+                }
+                else {
+                    let data = await rawResponse.json();
+                    this.alert.message = data.message;
+                    this.alert.show = true;
+                    this.alert.success = false;
+                }
+            } catch (e) {
+                console.error(e, e.message || "Error");
+            }
         }
     },
     async mounted() {

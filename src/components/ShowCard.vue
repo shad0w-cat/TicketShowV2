@@ -1,5 +1,5 @@
 <template>
-    <AlertComponent v-if="alert.show" :message="alert.message" :success="alert.success" />
+    <AlertComponent v-if="alert.show" :message="alert.message" :success="alert.success" @hide="hideAlert" />
     <div class="containerS">
         <div class="show-card-admin">
             <h2>{{ show.name }}</h2>
@@ -27,6 +27,9 @@ export default {
     },
     props: ['show'],
     methods: {
+        hideAlert() {
+            this.alert.show = false;
+        },
         bookShow() {
             this.$router.push(`/booking/${this.show.id}`);
         }
