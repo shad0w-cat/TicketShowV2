@@ -3,7 +3,7 @@ from email import message
 from re import A
 from flask_restful import Resource, reqparse, marshal, Api, fields, marshal_with, abort
 from flask import current_app, jsonify, send_from_directory, session
-from datetime import datetime, timedelta
+from datetime import datetime, time, timedelta
 from models import User, Venue, Show, user_show, db
 import os
 import json
@@ -84,13 +84,14 @@ def initialize_views(app):
 # app = current_app._get_current_object()
 
 
-class index(Resource):
-    cache.cached(timeout=10)
-    def post(self):
+
+# class index(Resource):
+#     @cache.cached(timeout=30)
+#     def post(self):
         
-        print("chal gya chal gya")
+#         print("chal gya chal gya")
     
-api.add_resource(index,"/api/aao/idhar")
+# api.add_resource(index,"/api/aao/idhar")
 
 class Signup(Resource):
     def post(self):
@@ -200,7 +201,7 @@ class Logout(Resource):
 
 class Profile(Resource):
     @auth_required
-    # @cache.cached(timeout=2)
+    @cache.cached(timeout=20)
     def get(self, userId=None):
         results = []
         if userId:

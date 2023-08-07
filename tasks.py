@@ -1,5 +1,5 @@
 from datetime import datetime
-from celery_worker import celery
+from worker import celery
 from flask import current_app as app
 from models import User, Venue, user_show, Show
 from send_mail import send_email
@@ -14,8 +14,8 @@ from dateutil import parser
 @celery.on_after_finalize.connect
 def setup_periodic_tasks(sender, **kwargs):
     print("in celery")
-    sender.add_periodic_task(crontab(hour=2, minute=56), daily_task.s(), name='daily')
-    sender.add_periodic_task(crontab(0, 0, day_of_month='1'), monthly_task.s(), name='monthly')
+    sender.add_periodic_task(30.0, daily_task.s(), name='daily')
+    sender.add_periodic_task(600.0, monthly_task.s(), name='monthly')
 
 @celery.task()
 def test_func():
@@ -23,6 +23,7 @@ def test_func():
 
 @celery.task()
 def daily_task():
+    print("in daily task")
     send = False
     all_users = User.query.all()
     for user in all_users:
@@ -61,3 +62,4 @@ def monthly_task():
             html=Template(b.read())
             send_email(user.email, subject="Monthly Progress Report", message=html.render(d=d,user=user))
         
+daily_task()

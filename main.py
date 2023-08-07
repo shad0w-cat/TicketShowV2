@@ -1,18 +1,28 @@
+from datetime import time
 from typing import ByteString
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from models import db, User
 from flask_cors import CORS
 from views import initialize_views
-from celery_worker import celery, ContextTask
+from worker import celery, ContextTask
+from flask_caching import Cache
 
 
 app = Flask(__name__)
 CORS(app)
+cache = Cache()
+
 app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///TicketShow_database.sqlite3"
 app.config["DEBUG"] = False
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = True
 app.secret_key = "shushhh"
+app.config["CACHE_TYPE"] = "RedisCache"
+app.config['CACHE_REDIS_HOST'] = "localhost"
+app.config['CACHE_REDIS_PORT'] = 6379
+app.config["CACHE_REDIS_URL"] = "redis://localhost:6379"
+app.config['CACHE_DEFAULT_TIMEOUT'] = 200
+cache.init_app(app)
 
 db.init_app(app)
 with app.app_context():
@@ -36,6 +46,12 @@ celery.conf.update(
 )
 
 celery.Task = ContextTask
+
+@app.route('/abcd')
+@cache.cached(timeout=50)
+def testingcache():
+    time.sleep(10)
+    return "done"
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=8081, debug=True)
