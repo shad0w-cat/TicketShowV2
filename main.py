@@ -6,24 +6,16 @@ from flask_sqlalchemy import SQLAlchemy
 from models import db, User
 from flask_cors import CORS
 from views import initialize_views
-from flask_caching import Cache
-import celery_task
+from celery_task import initialize_celery
 
 app = Flask(__name__)
 CORS(app)
-cache = Cache()
 
 app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///TicketShow_database.sqlite3"
 app.config["DEBUG"] = False
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = True
 app.secret_key = "shushhh"
-app.config["CACHE_TYPE"] = "RedisCache"
-app.config['CACHE_REDIS_HOST'] = "localhost"
-app.config['CACHE_REDIS_PORT'] = 6379
-app.config["CACHE_REDIS_URL"] = "redis://localhost:6379"
-app.config['CACHE_DEFAULT_TIMEOUT'] = 200
-cache.init_app(app)
-# celery_task.initialize_celery(app)
+
 
 db.init_app(app)
 with app.app_context():
@@ -34,12 +26,7 @@ with app.app_context():
         db.session.add(admin)
         db.session.commit()
 initialize_views(app)
-
-@app.route('/abcd')
-@cache.cached(timeout=10)
-def testingcache():
-    time_module.sleep(10)
-    return "done"
+initialize_celery(app)
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=8081, debug=True)
