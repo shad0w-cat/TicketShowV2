@@ -23,7 +23,7 @@ app.config['CACHE_REDIS_PORT'] = 6379
 app.config["CACHE_REDIS_URL"] = "redis://localhost:6379"
 app.config['CACHE_DEFAULT_TIMEOUT'] = 200
 cache.init_app(app)
-celery_task.initialize_celery(app)
+# celery_task.initialize_celery(app)
 
 db.init_app(app)
 with app.app_context():
