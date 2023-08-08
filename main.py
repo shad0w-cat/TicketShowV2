@@ -1,13 +1,13 @@
 from datetime import time
+import time as time_module
 from typing import ByteString
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from models import db, User
 from flask_cors import CORS
 from views import initialize_views
-from worker import celery, ContextTask
 from flask_caching import Cache
-
+import celery_task
 
 app = Flask(__name__)
 CORS(app)
@@ -23,6 +23,7 @@ app.config['CACHE_REDIS_PORT'] = 6379
 app.config["CACHE_REDIS_URL"] = "redis://localhost:6379"
 app.config['CACHE_DEFAULT_TIMEOUT'] = 200
 cache.init_app(app)
+celery_task.initialize_celery(app)
 
 db.init_app(app)
 with app.app_context():
@@ -34,23 +35,10 @@ with app.app_context():
         db.session.commit()
 initialize_views(app)
 
-celery = celery
-
-CELERY_BROKER_URL = "redis://127.0.0.1:6379/1"
-CELERY_RESULT_BACKEND = "redis://127.0.0.1:6379/2"
-
-celery.conf.update(
-    broker_url="redis://127.0.0.1:6379/1",
-    result_backend="redis://127.0.0.1:6379/2",
-    timezone="Asia/Kolkata",
-)
-
-celery.Task = ContextTask
-
 @app.route('/abcd')
-@cache.cached(timeout=50)
+@cache.cached(timeout=10)
 def testingcache():
-    time.sleep(10)
+    time_module.sleep(10)
     return "done"
 
 if __name__ == "__main__":

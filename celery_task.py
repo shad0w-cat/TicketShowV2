@@ -1,13 +1,14 @@
-from worker import celery
-from flask import current_app as app
+from celery import Celery, Task
 from models import User, Venue, user_show, Show
 from send_mail import send_email
 from jinja2 import Template
-
-from celery import Celery
 from celery.schedules import crontab
 from dateutil import parser
 from datetime import date, datetime
+
+celery = Celery(broker_url="redis://127.0.0.1:6379/1",
+    result_backend="redis://127.0.0.1:6379/2",
+    timezone="Asia/Kolkata",)
 
 @celery.on_after_finalize.connect
 def setup_periodic_tasks(sender, **kwargs):
@@ -59,4 +60,21 @@ def monthly_task():
         with open("public/send_monthly.html","r") as b:
             html=Template(b.read())
             send_email(user.email, subject="Monthly Progress Report", message=html.render(d=d,user=user))
-        
+
+def initialize_celery(app):
+    app = app
+    # app.config['CELERY_BROKER_URL'] = "redis://127.0.0.1:6379/1"
+    # app.config['CELERY_RESULT_BACKEND'] = "redis://127.0.0.1:6379/2"
+    # celery.conf.update(app.config)
+    class FlaskTask(Task):
+        def __call__(self, *args, **kwargs):
+            with app.app_context():
+                self.run(*args, **kwargs)
+
+    celery_app = Celery(app.name, task_cls=FlaskTask)
+    celery_app.config_from_object("celeryconfig")
+    celery_app.set_default()
+    app.extensions["celery"] = celery_app
+    print("celery created")
+    # return celery_app
+

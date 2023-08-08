@@ -1,28 +1,34 @@
-from email.mime.multipart import MIMEMultipart
-from email.mime.text import MIMEText
+from flask import Flask, render_template, request
 import smtplib
+from email.message import EmailMessage
 
-SMTP_SERVER_HOST= "localhost"
-SMTP_SERVER_PORT= 1025
-SENDER_ADDRESS = "iamstuarttheminion@gmail.com"
-SENDER_PASSWORD = "aplnoeailycvpgwg"
+app = Flask(__name__)
 
-def send_email(to_address, subject, message):
-    msg=MIMEMultipart()
-    msg["From"] = SENDER_ADDRESS
-    msg["To"] = to_address
-    msg["Subject"] = subject
-    msg.attach(MIMEText(message,"html"))
-    
-    s = smtplib.SMTP(host=SMTP_SERVER_HOST, port=SMTP_SERVER_PORT)
-    s.login(SENDER_ADDRESS,SENDER_PASSWORD)
-    s.send_message(msg)
-    s.quit()
-    return True 
+EMAIL_ADDRESS = "iamstuarttheminion@gmail.com"
+EMAIL_PASSWORD = "aplnoeailycvpgwg"
+SMTP_SERVER = 'localhost'
+SMTP_PORT = 1025 
 
-    
-# def main():
-#     send_email("sample@gmail.com", subject="Test mail", message = "hi")
+def send_email(to_email, subject, message):
+    print("in send")
 
-# if __name__=="__main__":
-#     main()
+    msg = EmailMessage()
+    print("after email message")
+    msg.set_content(message)
+    msg['Subject'] = subject
+    msg['From'] = EMAIL_ADDRESS
+    msg['To'] = to_email
+    try:
+        print("in try")
+        with smtplib.SMTP(SMTP_SERVER, SMTP_PORT) as smtp:
+            print("here")
+            smtp.login(EMAIL_ADDRESS, EMAIL_PASSWORD)
+            print("logged in")
+            smtp.send_message(msg)
+        return 'Email sent successfully!'
+    except Exception as e:
+        print(e.msg())
+
+
+if __name__ == '__main__':
+    send_email()
