@@ -3,7 +3,7 @@ import time as time_module
 from typing import ByteString
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
-from models import db, User
+from models import db, User, user_show, Show, Venue
 from flask_cors import CORS
 from views import initialize_views
 from celery_task import initialize_celery
@@ -26,7 +26,7 @@ with app.app_context():
         db.session.add(admin)
         db.session.commit()
 initialize_views(app)
-initialize_celery(app)
+celery = initialize_celery(app, User, user_show, Show, Venue)
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=8081, debug=True)
