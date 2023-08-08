@@ -76,5 +76,5 @@ def initialize_celery(app):
     celery_app.set_default()
     app.extensions["celery"] = celery_app
     print("celery created")
-    # return celery_app
+    return celery_app
 

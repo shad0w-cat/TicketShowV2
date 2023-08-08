@@ -13,6 +13,13 @@ import jwt
 import pandas as pd
 from flask_caching import Cache
 import matplotlib
+from send_mail import send_email
+from jinja2 import Template
+from celery.schedules import crontab
+from dateutil import parser
+from datetime import date, datetime
+import celery_task
+from celery import Celery, Task
 
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
@@ -20,6 +27,7 @@ import numpy as np
 
 api = Api()
 cache = Cache()
+celery = Celery("Application Jobs")
 
 ven = {
     "venue_id": fields.Integer,
@@ -79,6 +87,8 @@ def initialize_views(app):
     app.config["CACHE_REDIS_URL"] = "redis://localhost:6379"
     app.config['CACHE_DEFAULT_TIMEOUT'] = 200
     cache.init_app(app)
+    celery = celery_task.initialize_celery(app)
+    # CeleryTask(cel_app)
 
 
 # app = current_app._get_current_object()
@@ -740,3 +750,55 @@ api.add_resource(GetUserRole, "/api/getUserRole/<int:userId>")
 api.add_resource(ExportVenue, "/api/exportVenue/<int:venueId>")
 api.add_resource(ShowSummary, "/api/summary/<int:venueId>")
 api.add_resource(UserRating, "/api/rating/<int:bookingId>/<string:rating>")
+
+@celery.on_after_finalize.connect
+def setup_periodic_tasks(sender, **kwargs):
+    print("in celery")
+    sender.add_periodic_task(30.0, daily_task.s(), name='daily')
+    sender.add_periodic_task(600.0, monthly_task.s(), name='monthly')
+
+@celery.task()
+def test_func():
+    print("yaha aa gya")
+
+@celery.task()
+def daily_task():
+    with current_app.app_context():
+        print("in daily task")
+        send = False
+        all_users = User.query.all()
+        for user in all_users:
+            user_shows = user_show.query.filter(user_show.user_id == user.user_id).all()
+            for bookings in user_shows:
+                if parser.parse(bookings.booking_time).date() == datetime.now().date():
+                    send = False
+                    break
+            if send:
+                with open("public/send_mail.html","r") as b:
+                    html=Template(b.read())
+                    print("sent yayayayaya")
+                    send_email(user.email, subject="Daily Reminder", message=html.render(user=user))
+                    
+
+@celery.task()
+def monthly_task():
+    all_users = User.query.all()
+    for user in all_users:
+        d = {}
+        user_shows = user_show.query.filter(user_show.user_id == user.user_id).all()
+        month = datetime.now().month()-1
+        for bookings in user_shows:
+            booking = parser.parse(bookings.booking_time)
+            if booking.month() == month:
+                show = Show.query.filter(Show.show_id == bookings.show_id).first()
+                venue = Venue.query.filter(Venue.venue_id == bookings.venue_id).first()
+                
+                if (show.name in d.keys()) and (d[show.name]['booking'] == booking.date()):
+                    d[show.name]["count"] += 1
+                    d[show.name]["booking"].append(booking.date())
+                    continue
+                d[show.name] = {'count' : 1, 'booking' : [booking.date()]}
+
+        with open("public/send_monthly.html","r") as b:
+            html=Template(b.read())
+            send_email(user.email, subject="Monthly Progress Report", message=html.render(d=d,user=user))
