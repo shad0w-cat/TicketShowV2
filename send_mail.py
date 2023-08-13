@@ -13,19 +13,18 @@ def send_email(to_email, subject, message):
     print("in send")
 
     msg = EmailMessage()
-    print("after email message")
     msg.set_content(message)
     msg['Subject'] = subject
     msg['From'] = EMAIL_ADDRESS
     msg['To'] = to_email
+    msg.add_alternative(message, subtype='html')  
     try:
         print("in try")
         with smtplib.SMTP(SMTP_SERVER, SMTP_PORT) as smtp:
-            print("here")
             smtp.login(EMAIL_ADDRESS, EMAIL_PASSWORD)
-            print("logged in")
+            smtp.set_debuglevel(1)
             smtp.send_message(msg)
-        return 'Email sent successfully!'
+            print('Email sent successfully!')
     except Exception as e:
         print(e.msg())
 

@@ -4,35 +4,25 @@
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <title>Monthly Entertainment Report</title>
 </head>
 <body>
     
-
 <h1>Monthly Entertainment Report</h1>
 
 <div>
-    {% if d|length==0 %}
+    {% if d|length == 0 %}
         <h4>No Shows booked by you in this month</h4>
     {% else %}
-
-        <h3>Hi {{user.name}}</h3>
-        {% for i in d %}
-            <h4>Show : {{i}}</h4>
-                {% for j in d[i] %}
-
-                    <h6>j : {{d[i][j]}}</h6>
-                {% endfor %}
-
-            {% endif %}
+        <h3>Hi, {{ user.name }}</h3>
+        {% for show, details in d.items() %}
+            <h4>Show : {{ show }}</h4>
+            {% for key, value in details.items() %}
+                <h6>{{ key }} : {{ value }}</h6>
+            {% endfor %}
         {% endfor %}
-<hr>
-
-
     {% endif %}
 </div>
-
-
 
 </body>
 </html>
