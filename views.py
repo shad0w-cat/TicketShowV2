@@ -625,7 +625,7 @@ class ExportVenue(Resource):
                         "Ratings": Ratings,
                     }
                 )
-                df.to_csv(f"{venue_name}.csv")
+                df.to_csv(f"{venue_name}.csv", index=False)
             else:
                 abort(404, "no bookings for this venue")
 
@@ -721,55 +721,3 @@ api.add_resource(ExportVenue, "/api/exportVenue/<int:venueId>")
 api.add_resource(ShowSummary, "/api/summary/<int:venueId>")
 api.add_resource(UserRating, "/api/rating/<int:bookingId>/<string:rating>")
 
-# @celery_app.on_after_finalize.connect
-# def setup_periodic_tasks(sender, **kwargs):
-#     print("in celery")
-#     sender.add_periodic_task(30.0, test_func.s())
-#     sender.add_periodic_task(5000, daily_task.s(), name='daily')
-#     sender.add_periodic_task(6000, monthly_task.s(), name='monthly')
-
-# @celery_app.task()
-# def test_func():
-#     print("yaha aa gya")
-
-# @celery_app.task()
-# def daily_task():
-#     with current_app.app_context():
-#         print("in daily task")
-#         send = False
-#         all_users = User.query.all()
-#         for user in all_users:
-#             user_shows = user_show.query.filter(user_show.user_id == user.user_id).all()
-#             for bookings in user_shows:
-#                 if parser.parse(bookings.booking_time).date() == datetime.now().date():
-#                     send = False
-#                     break
-#             if send:
-#                 with open("public/send_mail.html","r") as b:
-#                     html=Template(b.read())
-#                     print("sent yayayayaya")
-#                     send_email(user.email, subject="Daily Reminder", message=html.render(user=user))
-                    
-
-# @celery_app.task()
-# def monthly_task():
-#     all_users = User.query.all()
-#     for user in all_users:
-#         d = {}
-#         user_shows = user_show.query.filter(user_show.user_id == user.user_id).all()
-#         month = datetime.now().month()-1
-#         for bookings in user_shows:
-#             booking = parser.parse(bookings.booking_time)
-#             if booking.month() == month:
-#                 show = Show.query.filter(Show.show_id == bookings.show_id).first()
-#                 venue = Venue.query.filter(Venue.venue_id == bookings.venue_id).first()
-                
-#                 if (show.name in d.keys()) and (d[show.name]['booking'] == booking.date()):
-#                     d[show.name]["count"] += 1
-#                     d[show.name]["booking"].append(booking.date())
-#                     continue
-#                 d[show.name] = {'count' : 1, 'booking' : [booking.date()]}
-
-#         with open("public/send_monthly.html","r") as b:
-#             html=Template(b.read())
-#             send_email(user.email, subject="Monthly Progress Report", message=html.render(d=d,user=user))
